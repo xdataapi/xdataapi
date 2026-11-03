@@ -244,9 +244,14 @@ components:
       properties:
         code:
           type: string
-          enum: [missing_key, invalid_key, rate_limited, no_credits, bad_request, not_found, access_denied, product_unavailable, billing_disabled,
+          enum: [missing_key, invalid_key, rate_limited, no_credits, email_not_allowed, bad_request, not_found, access_denied, product_unavailable, billing_disabled,
                  upstream_rate_limited, no_account, upstream_error, request_rejected, query_id_stale, internal]
         message: { type: string }
+        top_up_url:
+          type: string
+          format: uri
+          description: Only on `no_credits`. The page where a pack is bought.
+          example: https://xdataapi.io/dashboard/billing
     Error:
       description: |
         Every failure from this API, in one shape. Charged nothing, always carries a
