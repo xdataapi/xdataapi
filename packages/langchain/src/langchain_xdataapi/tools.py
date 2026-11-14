@@ -11,7 +11,7 @@ from typing import Any, Literal, Sequence
 
 from langchain_core.callbacks import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .client import XdataapiClient
 
@@ -47,39 +47,78 @@ class _Base(BaseTool):
 # --- users ---------------------------------------------------------------
 
 
+def _one_of(first: Any, second: Any, names: str) -> None:
+    """A user is named by handle or by id, never by both and never by neither."""
+    if (first is None) == (second is None):
+        raise ValueError(f"give {names}, one of the two")
+
+
 class _UserArgs(BaseModel):
-    handle: str = Field(description="X handle, with or without the leading @.")
+    handle: str | None = Field(default=None, description="X handle, with or without the leading @.")
+    id: str | None = Field(
+        default=None,
+        pattern=r"^\d{1,19}$",
+        description="Numeric user id. It stays the same when the user changes the handle.",
+    )
     fresh: bool | None = Field(default=None, description="Skip the cache. Costs double.")
+
+    @model_validator(mode="after")
+    def _handle_or_id(self) -> "_UserArgs":
+        _one_of(self.handle, self.id, "handle or id")
+        return self
 
 
 class GetUser(_Base):
     name: str = "x_get_user"
     description: str = (
-        "Public profile of one X (Twitter) user by handle: bio, counts, verified state, "
-        "created date. Costs 1 credit."
+        "Public profile of one X (Twitter) user, by handle or by numeric user id (give one of "
+        "the two): bio, counts, verified state, created date. The id stays the same when the "
+        "user changes the handle. Costs 1 credit."
     )
     args_schema: type[BaseModel] = _UserArgs
 
-    def _call(self, handle: str, fresh: bool | None = None) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/users/{_handle(handle)}", {"fresh": fresh}
+    def _call(
+        self, handle: str | None = None, id: str | None = None, fresh: bool | None = None
+    ) -> tuple[str, dict[str, Any] | None]:
+        _one_of(handle, id, "handle or id")
+        if id is not None:
+            return f"/v1/users/id/{id.strip()}", {"fresh": fresh}
+        return f"/v1/users/{_handle(handle or '')}", {"fresh": fresh}
 
 
 class _UsersArgs(BaseModel):
-    handles: Sequence[str] = Field(description="Up to 100 handles in one call.")
+    handles: Sequence[str] | None = Field(default=None, description="Up to 100 handles in one call.")
+    ids: Sequence[str] | None = Field(
+        default=None, description="Up to 100 numeric user ids in one call, in place of handles."
+    )
     fresh: bool | None = Field(default=None, description="Skip the cache. Costs double.")
+
+    @model_validator(mode="after")
+    def _handles_or_ids(self) -> "_UsersArgs":
+        _one_of(self.handles, self.ids, "handles or ids")
+        return self
 
 
 class GetUsers(_Base):
     name: str = "x_get_users"
     description: str = (
-        "Profiles of up to 100 X users in ONE call. Prefer this over repeated single reads: "
+        "Profiles of up to 100 X users in ONE call, by handle (handles) or by numeric user id "
+        "(ids); give one of the two lists. Prefer this over repeated single reads: "
         "it is one request and one rate-limit slot. Costs 1 credit per profile found; "
-        "handles that do not exist are listed in errors and cost nothing."
+        "inputs that do not exist are listed in errors and cost nothing."
     )
     args_schema: type[BaseModel] = _UsersArgs
 
-    def _call(self, handles: Sequence[str], fresh: bool | None = None) -> tuple[str, dict[str, Any] | None]:
-        return "/v1/users/batch", {"handles": ",".join(_handle(h) for h in handles), "fresh": fresh}
+    def _call(
+        self,
+        handles: Sequence[str] | None = None,
+        ids: Sequence[str] | None = None,
+        fresh: bool | None = None,
+    ) -> tuple[str, dict[str, Any] | None]:
+        _one_of(handles, ids, "handles or ids")
+        if ids is not None:
+            return "/v1/users/batch", {"ids": ",".join(i.strip() for i in ids), "fresh": fresh}
+        return "/v1/users/batch", {"handles": ",".join(_handle(h) for h in handles or []), "fresh": fresh}
 
 
 class _PageArgs(BaseModel):

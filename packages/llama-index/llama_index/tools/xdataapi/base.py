@@ -15,6 +15,11 @@ from .client import XdataapiAuthError, XdataapiClient, XdataapiError
 __all__ = ["XdataapiToolSpec", "XdataapiClient", "XdataapiError", "XdataapiAuthError"]
 
 
+def _bad_request(message: str) -> dict:
+    """An argument error in the shape of an API error, so the model can repair the call."""
+    return {"error": {"code": "bad_request", "message": message}}
+
+
 def _handle(value: str) -> str:
     return value.strip().lstrip("@")
 
@@ -154,24 +159,37 @@ class XdataapiToolSpec(BaseToolSpec):
 
     # --- users -----------------------------------------------------------
 
-    def get_user(self, handle: str) -> dict:
-        """Read the public profile of one X user. Costs 1 credit.
+    def get_user(self, handle: Optional[str] = None, id: Optional[str] = None) -> dict:
+        """Read the public profile of one X user, by handle or by user id. Costs 1 credit.
+
+        Give one of the two. The id stays the same when the user changes the handle.
 
         Args:
             handle: X handle, with or without the leading @.
+            id: Numeric user id, in place of the handle.
         """
-        return self.client.get(f"/v1/users/{_handle(handle)}")
+        if (handle is None) == (id is None):
+            return _bad_request("give handle or id, one of the two")
+        if id is not None:
+            return self.client.get(f"/v1/users/id/{str(id).strip()}")
+        return self.client.get(f"/v1/users/{_handle(handle or '')}")
 
-    def get_users(self, handles: List[str]) -> dict:
-        """Read up to 100 X profiles in ONE call.
+    def get_users(self, handles: Optional[List[str]] = None, ids: Optional[List[str]] = None) -> dict:
+        """Read up to 100 X profiles in ONE call, by handle or by user id.
 
-        Prefer this over repeated single reads. Costs 1 credit per profile found;
-        handles that do not exist are listed in ``errors`` and cost nothing.
+        Give one of the two lists. Prefer this over repeated single reads. Costs 1
+        credit per profile found; inputs that do not exist are listed in ``errors``
+        and cost nothing.
 
         Args:
             handles: X handles, at most 100.
+            ids: Numeric user ids, at most 100, in place of the handles.
         """
-        return self.client.get("/v1/users/batch", {"handles": ",".join(_handle(h) for h in handles)})
+        if (handles is None) == (ids is None):
+            return _bad_request("give handles or ids, one of the two")
+        if ids is not None:
+            return self.client.get("/v1/users/batch", {"ids": ",".join(str(i).strip() for i in ids)})
+        return self.client.get("/v1/users/batch", {"handles": ",".join(_handle(h) for h in handles or [])})
 
     def get_user_tweets(
         self, user: str, count: Optional[int] = None, cursor: Optional[str] = None

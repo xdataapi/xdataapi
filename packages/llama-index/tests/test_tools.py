@@ -44,6 +44,33 @@ def test_get_user_strips_the_at_sign():
 
 
 @respx.mock
+def test_get_user_by_id_reads_the_id_route():
+    route = respx.get(f"{BASE}/v1/users/id/783214").mock(
+        return_value=httpx.Response(200, json={"data": {"id": "783214", "handle": "X"}})
+    )
+    out = spec().get_user(id="783214")
+    assert route.called
+    assert out["data"]["handle"] == "X"
+
+
+def test_a_user_is_named_by_handle_or_by_id_and_the_model_can_repair_the_call():
+    s = spec()
+    assert s.get_user()["error"]["code"] == "bad_request"
+    assert s.get_user(handle="x", id="1")["error"]["code"] == "bad_request"
+    assert s.get_users()["error"]["code"] == "bad_request"
+    assert s.get_users(handles=["x"], ids=["1"])["error"]["code"] == "bad_request"
+
+
+@respx.mock
+def test_users_batch_by_ids_sends_ids_and_no_handles():
+    route = respx.get(f"{BASE}/v1/users/batch").mock(return_value=httpx.Response(200, json={"data": []}))
+    spec().get_users(ids=["783214", "13334762"])
+    params = route.calls.last.request.url.params
+    assert params["ids"] == "783214,13334762"
+    assert "handles" not in params
+
+
+@respx.mock
 def test_search_passes_the_operators_through_untouched():
     route = respx.get(f"{BASE}/v1/tweets/search").mock(return_value=httpx.Response(200, json={"data": []}))
     spec().search_tweets(q="from:x since:2026-09-01 -filter:replies", count=10)

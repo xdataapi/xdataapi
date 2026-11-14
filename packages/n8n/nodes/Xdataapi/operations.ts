@@ -33,6 +33,8 @@ export interface Params {
 	tweetIds?: string;
 	handle?: string;
 	handles?: string;
+	userId?: string;
+	userIds?: string;
 	user?: string;
 	count?: number;
 	cursor?: string;
@@ -141,6 +143,23 @@ export const OPERATIONS: Record<Resource, OperationSpec[]> = {
 			query: (p) => ({ handles: cleanList(p.handles ?? '', true) }),
 			collection: 'data',
 			credits: '1 credit per profile found. Handles that do not exist cost nothing.',
+		},
+		{
+			name: 'getById',
+			displayName: 'Get by ID',
+			description: 'Get the public profile of one user by numeric user ID',
+			path: (p) => `/v1/users/id/${encodeURIComponent(String(p.userId ?? '').trim())}`,
+			collection: 'single',
+			credits: '1 credit.',
+		},
+		{
+			name: 'getManyById',
+			displayName: 'Get Many by ID',
+			description: 'Get up to 100 profiles in one request by numeric user ID',
+			path: () => '/v1/users/batch',
+			query: (p) => ({ ids: cleanList(p.userIds ?? '', false) }),
+			collection: 'data',
+			credits: '1 credit per profile found. IDs that do not exist cost nothing.',
 		},
 		{
 			name: 'getTweets',

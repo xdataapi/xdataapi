@@ -8,6 +8,7 @@ from langchain_xdataapi import (
     GetBalance,
     GetTweets,
     GetUser,
+    GetUsers,
     SearchTweets,
     XdataapiAuthError,
     XdataapiClient,
@@ -30,6 +31,41 @@ def test_get_user_strips_the_at_sign():
     out = GetUser(client=client()).invoke({"handle": "@vercel"})
     assert route.called
     assert json.loads(out)["credits_charged"] == 1
+
+
+@respx.mock
+def test_get_user_by_id_reads_the_id_route():
+    route = respx.get(f"{BASE}/v1/users/id/783214").mock(
+        return_value=httpx.Response(200, json={"data": {"id": "783214", "handle": "X"}, "credits_charged": 1})
+    )
+    out = GetUser(client=client()).invoke({"id": "783214"})
+    assert route.called
+    assert json.loads(out)["data"]["handle"] == "X"
+
+
+def test_get_user_wants_a_handle_or_an_id_and_not_both():
+    tool = GetUser(client=client())
+    with pytest.raises(Exception, match="handle or id"):
+        tool.invoke({})
+    with pytest.raises(Exception, match="handle or id"):
+        tool.invoke({"handle": "x", "id": "783214"})
+    with pytest.raises(Exception):
+        tool.invoke({"id": "not-a-number"})
+
+
+@respx.mock
+def test_users_batch_by_ids_sends_ids_and_no_handles():
+    route = respx.get(f"{BASE}/v1/users/batch").mock(return_value=httpx.Response(200, json={"data": []}))
+    GetUsers(client=client()).invoke({"ids": ["783214", "13334762"]})
+    params = route.calls.last.request.url.params
+    assert params["ids"] == "783214,13334762"
+    assert "handles" not in params
+    GetUsers(client=client()).invoke({"handles": ["@x", "github"]})
+    params = route.calls.last.request.url.params
+    assert params["handles"] == "x,github"
+    assert "ids" not in params
+    with pytest.raises(Exception, match="handles or ids"):
+        GetUsers(client=client()).invoke({"handles": ["x"], "ids": ["1"]})
 
 
 @respx.mock

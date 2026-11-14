@@ -46,8 +46,8 @@ print(search.invoke({"q": "from:vercel since:2026-09-01", "count": 10}))
 | Tool | Reads | Credits |
 |---|---|---|
 | `x_search_tweets` | Search with the x.com operators | 1 per result |
-| `x_get_user` | One profile | 1 |
-| `x_get_users` | Up to 100 profiles in one call | 1 per profile |
+| `x_get_user` | One profile, by `handle` or by numeric user `id` | 1 |
+| `x_get_users` | Up to 100 profiles in one call, by `handles` or by `ids` | 1 per profile |
 | `x_get_user_tweets` | Latest posts of a user | 1 per post |
 | `x_get_tweet` | One post | 1 |
 | `x_get_tweets` | Up to 100 posts in one call | 1 per post |

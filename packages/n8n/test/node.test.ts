@@ -63,7 +63,7 @@ describe('the operation table', () => {
 
 	it('offers every read the API has', () => {
 		const names = Object.values(OPERATIONS).flat().length;
-		expect(names).toBe(14);
+		expect(names).toBe(16);
 	});
 });
 
@@ -77,6 +77,16 @@ describe('reading one object', () => {
 		expect(requests[0].url).toBe('/v1/users/vercel');
 		expect(out).toHaveLength(1);
 		expect(out[0].json).toEqual({ handle: 'vercel', followers: 12 });
+	});
+
+	it('reads a profile by user id on the id route', async () => {
+		const { ctx, requests } = context(
+			{ resource: 'user', operation: 'getById', userId: ' 783214 ' },
+			[{ data: { id: '783214', handle: 'X' }, credits_charged: 1 }],
+		);
+		const out = await run(ctx);
+		expect(requests[0].url).toBe('/v1/users/id/783214');
+		expect(out[0].json).toEqual({ id: '783214', handle: 'X' });
 	});
 
 	it('adds _meta only when asked', async () => {
@@ -215,6 +225,17 @@ describe('shapes the API returns', () => {
 		await run(ctx);
 		expect(requests[0].url).toBe('/v1/users/batch');
 		expect(requests[0].qs).toMatchObject({ handles: 'x,github,vercel' });
+	});
+
+	it('sends a batch of user ids as ids, with no handles', async () => {
+		const { ctx, requests } = context(
+			{ resource: 'user', operation: 'getManyById', userIds: '783214, 13334762 ,' },
+			[{ data: [{ id: '783214' }, { id: '13334762' }] }],
+		);
+		const out = await run(ctx);
+		expect(requests[0].url).toBe('/v1/users/batch');
+		expect(requests[0].qs).toEqual({ ids: '783214,13334762' });
+		expect(out).toHaveLength(2);
 	});
 
 	it('reports the inputs a batch skipped, with the metadata option on', async () => {
