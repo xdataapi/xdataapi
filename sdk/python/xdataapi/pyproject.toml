@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xdataapi"
-version = "0.3.1"
+version = "0.3.2"
 description = "Python client for the xdataapi.io API: read-only X (Twitter) profiles, tweets, threads, search."
 authors = []
 license = "MIT"
