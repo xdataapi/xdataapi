@@ -54,6 +54,22 @@ def test_get_user_wants_a_handle_or_an_id_and_not_both():
 
 
 @respx.mock
+def test_a_model_argument_cannot_leave_its_path_segment():
+    from langchain_xdataapi import GetTweet, GetUserTweets
+
+    route = respx.route(method="GET", host="api.xdataapi.io").mock(return_value=httpx.Response(404, json={"error": {"code": "not_found"}}))
+    GetUser(client=client()).invoke({"handle": "../me"})
+    assert route.calls.last.request.url.raw_path.startswith(b"/v1/users/..%2Fme")
+    GetUserTweets(client=client()).invoke({"user": "x/../../me"})
+    assert route.calls.last.request.url.raw_path.startswith(b"/v1/users/x%2F..%2F..%2Fme/tweets")
+    GetTweet(client=client()).invoke({"id": "20/../../me"})
+    assert route.calls.last.request.url.raw_path.startswith(b"/v1/tweets/20%2F..%2F..%2Fme")
+    # The id route takes digits only, also when the tool is called without its schema.
+    with pytest.raises(ValueError, match="numeric user id"):
+        GetUser(client=client())._call(id="1/../../me")
+
+
+@respx.mock
 def test_users_batch_by_ids_sends_ids_and_no_handles():
     route = respx.get(f"{BASE}/v1/users/batch").mock(return_value=httpx.Response(200, json={"data": []}))
     GetUsers(client=client()).invoke({"ids": ["783214", "13334762"]})

@@ -62,6 +62,25 @@ def test_a_user_is_named_by_handle_or_by_id_and_the_model_can_repair_the_call():
 
 
 @respx.mock
+def test_a_model_argument_cannot_leave_its_path_segment():
+    route = respx.route(method="GET", host="api.xdataapi.io").mock(
+        return_value=httpx.Response(404, json={"error": {"code": "not_found"}})
+    )
+    s = spec()
+    s.get_user(handle="../me")
+    assert route.calls.last.request.url.raw_path.startswith(b"/v1/users/..%2Fme")
+    s.get_user_tweets("x/../../me")
+    assert route.calls.last.request.url.raw_path.startswith(b"/v1/users/x%2F..%2F..%2Fme/tweets")
+    s.get_tweet("20/../../me")
+    assert route.calls.last.request.url.raw_path.startswith(b"/v1/tweets/20%2F..%2F..%2Fme")
+    # A user id is digits only; anything else never becomes a request.
+    before = route.call_count
+    assert s.get_user(id="1/../../me")["error"]["code"] == "bad_request"
+    assert s.get_users(ids=["1", "2/../me"])["error"]["code"] == "bad_request"
+    assert route.call_count == before
+
+
+@respx.mock
 def test_users_batch_by_ids_sends_ids_and_no_handles():
     route = respx.get(f"{BASE}/v1/users/batch").mock(return_value=httpx.Response(200, json={"data": []}))
     spec().get_users(ids=["783214", "13334762"])

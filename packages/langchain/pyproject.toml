@@ -1,6 +1,6 @@
 [project]
 name = "langchain-xdataapi"
-version = "0.1.1"
+version = "0.1.2"
 description = "LangChain tools for xdataapi.io: read-only public X (Twitter) profiles, tweets, threads, followers and search."
 readme = "README.md"
 license = "MIT"

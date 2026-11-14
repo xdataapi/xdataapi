@@ -6,7 +6,9 @@ what the call costs in credits.
 
 from __future__ import annotations
 
+import re
 from typing import Any, List, Optional
+from urllib.parse import quote
 
 from llama_index.core.tools.tool_spec.base import BaseToolSpec
 
@@ -20,8 +22,17 @@ def _bad_request(message: str) -> dict:
     return {"error": {"code": "bad_request", "message": message}}
 
 
+_USER_ID = re.compile(r"^\d{1,19}$")
+
+
 def _handle(value: str) -> str:
     return value.strip().lstrip("@")
+
+
+def _seg(value: Any) -> str:
+    """One URL path segment. The value comes from a model, so nothing in it may
+    act as a path: a slash or a dot-dot is sent percent-encoded, not followed."""
+    return quote(str(value).strip(), safe="")
 
 
 class XdataapiToolSpec(BaseToolSpec):
@@ -97,7 +108,7 @@ class XdataapiToolSpec(BaseToolSpec):
         Args:
             id: Numeric post id, as a string.
         """
-        return self.client.get(f"/v1/tweets/{id}")
+        return self.client.get(f"/v1/tweets/{_seg(id)}")
 
     def get_tweets(self, ids: List[str]) -> dict:
         """Read up to 100 X posts by id in ONE call.
@@ -120,7 +131,7 @@ class XdataapiToolSpec(BaseToolSpec):
             id: Numeric post id, as a string.
             cursor: next_cursor from the previous page.
         """
-        return self.client.get(f"/v1/tweets/{id}/thread", {"cursor": cursor})
+        return self.client.get(f"/v1/tweets/{_seg(id)}/thread", {"cursor": cursor})
 
     def get_replies(self, id: str, cursor: Optional[str] = None) -> dict:
         """Read the direct replies to one X post, one page. Costs 1 credit per reply.
@@ -129,7 +140,7 @@ class XdataapiToolSpec(BaseToolSpec):
             id: Numeric post id, as a string.
             cursor: next_cursor from the previous page.
         """
-        return self.client.get(f"/v1/tweets/{id}/replies", {"cursor": cursor})
+        return self.client.get(f"/v1/tweets/{_seg(id)}/replies", {"cursor": cursor})
 
     def get_quotes(self, id: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:
         """Read the posts that quote one X post, newest first. Costs 1 credit per post.
@@ -140,7 +151,7 @@ class XdataapiToolSpec(BaseToolSpec):
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
-            f"/v1/tweets/{id}/quotes", {"count": self.client.cap(count), "cursor": cursor}
+            f"/v1/tweets/{_seg(id)}/quotes", {"count": self.client.cap(count), "cursor": cursor}
         )
 
     def get_retweeters(self, id: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:
@@ -154,7 +165,7 @@ class XdataapiToolSpec(BaseToolSpec):
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
-            f"/v1/tweets/{id}/retweeters", {"count": self.client.cap(count), "cursor": cursor}
+            f"/v1/tweets/{_seg(id)}/retweeters", {"count": self.client.cap(count), "cursor": cursor}
         )
 
     # --- users -----------------------------------------------------------
@@ -171,8 +182,10 @@ class XdataapiToolSpec(BaseToolSpec):
         if (handle is None) == (id is None):
             return _bad_request("give handle or id, one of the two")
         if id is not None:
-            return self.client.get(f"/v1/users/id/{str(id).strip()}")
-        return self.client.get(f"/v1/users/{_handle(handle or '')}")
+            if not _USER_ID.match(str(id).strip()):
+                return _bad_request("id must be a numeric user id")
+            return self.client.get(f"/v1/users/id/{_seg(id)}")
+        return self.client.get(f"/v1/users/{_seg(_handle(handle or ''))}")
 
     def get_users(self, handles: Optional[List[str]] = None, ids: Optional[List[str]] = None) -> dict:
         """Read up to 100 X profiles in ONE call, by handle or by user id.
@@ -188,7 +201,10 @@ class XdataapiToolSpec(BaseToolSpec):
         if (handles is None) == (ids is None):
             return _bad_request("give handles or ids, one of the two")
         if ids is not None:
-            return self.client.get("/v1/users/batch", {"ids": ",".join(str(i).strip() for i in ids)})
+            clean = [str(i).strip() for i in ids]
+            if not all(_USER_ID.match(i) for i in clean):
+                return _bad_request("ids must be numeric user ids")
+            return self.client.get("/v1/users/batch", {"ids": ",".join(clean)})
         return self.client.get("/v1/users/batch", {"handles": ",".join(_handle(h) for h in handles or [])})
 
     def get_user_tweets(
@@ -202,7 +218,7 @@ class XdataapiToolSpec(BaseToolSpec):
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
-            f"/v1/users/{_handle(user)}/tweets", {"count": self.client.cap(count), "cursor": cursor}
+            f"/v1/users/{_seg(_handle(user))}/tweets", {"count": self.client.cap(count), "cursor": cursor}
         )
 
     def get_followers(self, user: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:
@@ -217,7 +233,7 @@ class XdataapiToolSpec(BaseToolSpec):
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
-            f"/v1/users/{_handle(user)}/followers", {"count": self.client.cap(count), "cursor": cursor}
+            f"/v1/users/{_seg(_handle(user))}/followers", {"count": self.client.cap(count), "cursor": cursor}
         )
 
     def get_follower_ids(
@@ -233,7 +249,7 @@ class XdataapiToolSpec(BaseToolSpec):
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
-            f"/v1/users/{_handle(user)}/followers/ids",
+            f"/v1/users/{_seg(_handle(user))}/followers/ids",
             {"count": self.client.cap(count), "cursor": cursor},
         )
 
@@ -248,7 +264,7 @@ class XdataapiToolSpec(BaseToolSpec):
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
-            f"/v1/users/{_handle(user)}/following", {"count": self.client.cap(count), "cursor": cursor}
+            f"/v1/users/{_seg(_handle(user))}/following", {"count": self.client.cap(count), "cursor": cursor}
         )
 
     # --- account ---------------------------------------------------------

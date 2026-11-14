@@ -7,7 +7,9 @@ model that plans a multi-step read knows what the plan costs before it runs it.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any, Literal, Sequence
+from urllib.parse import quote
 
 from langchain_core.callbacks import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
 from langchain_core.tools import BaseTool
@@ -16,8 +18,17 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from .client import XdataapiClient
 
 
+_USER_ID = re.compile(r"^\d{1,19}$")
+
+
 def _handle(value: str) -> str:
     return value.strip().lstrip("@")
+
+
+def _seg(value: Any) -> str:
+    """One URL path segment. The value comes from a model, so nothing in it may
+    act as a path: a slash or a dot-dot is sent percent-encoded, not followed."""
+    return quote(str(value).strip(), safe="")
 
 
 def _dump(payload: dict[str, Any]) -> str:
@@ -82,8 +93,10 @@ class GetUser(_Base):
     ) -> tuple[str, dict[str, Any] | None]:
         _one_of(handle, id, "handle or id")
         if id is not None:
-            return f"/v1/users/id/{id.strip()}", {"fresh": fresh}
-        return f"/v1/users/{_handle(handle or '')}", {"fresh": fresh}
+            if not _USER_ID.match(id.strip()):
+                raise ValueError("id must be a numeric user id")
+            return f"/v1/users/id/{_seg(id)}", {"fresh": fresh}
+        return f"/v1/users/{_seg(_handle(handle or ''))}", {"fresh": fresh}
 
 
 class _UsersArgs(BaseModel):
@@ -138,7 +151,7 @@ class GetUserTweets(_Base):
     def _call(
         self, user: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/users/{_handle(user)}/tweets", {
+        return f"/v1/users/{_seg(_handle(user))}/tweets", {
             "count": self.client.cap(count),
             "cursor": cursor,
             "fresh": fresh,
@@ -156,7 +169,7 @@ class GetFollowers(_Base):
     def _call(
         self, user: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/users/{_handle(user)}/followers", {
+        return f"/v1/users/{_seg(_handle(user))}/followers", {
             "count": self.client.cap(count),
             "cursor": cursor,
             "fresh": fresh,
@@ -174,7 +187,7 @@ class GetFollowerIds(_Base):
     def _call(
         self, user: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/users/{_handle(user)}/followers/ids", {
+        return f"/v1/users/{_seg(_handle(user))}/followers/ids", {
             "count": self.client.cap(count),
             "cursor": cursor,
             "fresh": fresh,
@@ -192,7 +205,7 @@ class GetFollowing(_Base):
     def _call(
         self, user: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/users/{_handle(user)}/following", {
+        return f"/v1/users/{_seg(_handle(user))}/following", {
             "count": self.client.cap(count),
             "cursor": cursor,
             "fresh": fresh,
@@ -259,7 +272,7 @@ class GetTweet(_Base):
     args_schema: type[BaseModel] = _TweetArgs
 
     def _call(self, id: str, fresh: bool | None = None) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/tweets/{id}", {"fresh": fresh}
+        return f"/v1/tweets/{_seg(id)}", {"fresh": fresh}
 
 
 class _TweetsArgs(BaseModel):
@@ -296,7 +309,7 @@ class GetThread(_Base):
     def _call(
         self, id: str, cursor: str | None = None, fresh: bool | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/tweets/{id}/thread", {"cursor": cursor, "fresh": fresh}
+        return f"/v1/tweets/{_seg(id)}/thread", {"cursor": cursor, "fresh": fresh}
 
 
 class GetReplies(_Base):
@@ -307,7 +320,7 @@ class GetReplies(_Base):
     def _call(
         self, id: str, cursor: str | None = None, fresh: bool | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/tweets/{id}/replies", {"cursor": cursor, "fresh": fresh}
+        return f"/v1/tweets/{_seg(id)}/replies", {"cursor": cursor, "fresh": fresh}
 
 
 class _CountedTweetArgs(BaseModel):
@@ -325,7 +338,7 @@ class GetQuotes(_Base):
     def _call(
         self, id: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/tweets/{id}/quotes", {
+        return f"/v1/tweets/{_seg(id)}/quotes", {
             "count": self.client.cap(count),
             "cursor": cursor,
             "fresh": fresh,
@@ -343,7 +356,7 @@ class GetRetweeters(_Base):
     def _call(
         self, id: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
     ) -> tuple[str, dict[str, Any] | None]:
-        return f"/v1/tweets/{id}/retweeters", {
+        return f"/v1/tweets/{_seg(id)}/retweeters", {
             "count": self.client.cap(count),
             "cursor": cursor,
             "fresh": fresh,
