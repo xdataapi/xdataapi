@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { Xdataapi } from '../nodes/Xdataapi/Xdataapi.node';
-import { OPERATIONS, cleanHandle, cleanList, findOperation, pageSize } from '../nodes/Xdataapi/operations';
+import { OPERATIONS, cleanHandle, cleanList, findOperation, pageSize, segment } from '../nodes/Xdataapi/operations';
 
 type Body = Record<string, unknown>;
 
@@ -245,6 +245,14 @@ describe('shapes the API returns', () => {
 		);
 		const out = await run(ctx);
 		expect((out[1].json as Body)._errors).toEqual([{ input: '999', code: 'not_found' }]);
+	});
+
+	it('refuses a path value that is empty or only dots, which encoding does not change', async () => {
+		for (const bad of ['..', '.', ' ', '']) expect(() => segment(bad)).toThrow(/only dots/);
+		expect(segment(' a/b ')).toBe('a%2Fb');
+		const { ctx, requests } = context({ resource: 'user', operation: 'getTweets', user: '..', limit: 1 }, [{ data: [] }]);
+		await expect(run(ctx)).rejects.toThrow();
+		expect(requests).toHaveLength(0);
 	});
 
 	it('url-encodes a user id so a path cannot be escaped', async () => {

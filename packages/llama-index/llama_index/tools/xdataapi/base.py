@@ -6,8 +6,9 @@ what the call costs in credits.
 
 from __future__ import annotations
 
+import functools
 import re
-from typing import Any, List, Optional
+from typing import Any, Callable, List, Optional
 from urllib.parse import quote
 
 from llama_index.core.tools.tool_spec.base import BaseToolSpec
@@ -29,10 +30,31 @@ def _handle(value: str) -> str:
     return value.strip().lstrip("@")
 
 
+class _BadArgument(ValueError):
+    """An argument no request can be built from."""
+
+
 def _seg(value: Any) -> str:
     """One URL path segment. The value comes from a model, so nothing in it may
-    act as a path: a slash or a dot-dot is sent percent-encoded, not followed."""
-    return quote(str(value).strip(), safe="")
+    act as a path: a slash is sent percent-encoded, and a segment that is empty
+    or only dots ("..") is refused, because encoding does not change a dot."""
+    s = str(value).strip()
+    if s.strip(".") == "":
+        raise _BadArgument("a handle, user or id must not be empty or only dots")
+    return quote(s, safe="")
+
+
+def _repairable(fn: Callable[..., dict]) -> Callable[..., dict]:
+    """Give a bad argument back as data, like an API error, so the model can repair the call."""
+
+    @functools.wraps(fn)
+    def wrapper(*args: Any, **kwargs: Any) -> dict:
+        try:
+            return fn(*args, **kwargs)
+        except _BadArgument as err:
+            return _bad_request(str(err))
+
+    return wrapper
 
 
 class XdataapiToolSpec(BaseToolSpec):
@@ -102,6 +124,7 @@ class XdataapiToolSpec(BaseToolSpec):
             {"q": q, "product": product, "count": self.client.cap(count), "cursor": cursor},
         )
 
+    @_repairable
     def get_tweet(self, id: str) -> dict:
         """Read one X post by numeric id, with its author. Costs 1 credit.
 
@@ -122,6 +145,7 @@ class XdataapiToolSpec(BaseToolSpec):
         """
         return self.client.get("/v1/tweets/batch", {"ids": ",".join(str(i) for i in ids)})
 
+    @_repairable
     def get_thread(self, id: str, cursor: Optional[str] = None) -> dict:
         """Read one X post with its thread and replies, focal post first.
 
@@ -133,6 +157,7 @@ class XdataapiToolSpec(BaseToolSpec):
         """
         return self.client.get(f"/v1/tweets/{_seg(id)}/thread", {"cursor": cursor})
 
+    @_repairable
     def get_replies(self, id: str, cursor: Optional[str] = None) -> dict:
         """Read the direct replies to one X post, one page. Costs 1 credit per reply.
 
@@ -142,6 +167,7 @@ class XdataapiToolSpec(BaseToolSpec):
         """
         return self.client.get(f"/v1/tweets/{_seg(id)}/replies", {"cursor": cursor})
 
+    @_repairable
     def get_quotes(self, id: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:
         """Read the posts that quote one X post, newest first. Costs 1 credit per post.
 
@@ -154,6 +180,7 @@ class XdataapiToolSpec(BaseToolSpec):
             f"/v1/tweets/{_seg(id)}/quotes", {"count": self.client.cap(count), "cursor": cursor}
         )
 
+    @_repairable
     def get_retweeters(self, id: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:
         """Read the accounts that reposted one X post. Costs 0.5 credit per profile.
 
@@ -170,6 +197,7 @@ class XdataapiToolSpec(BaseToolSpec):
 
     # --- users -----------------------------------------------------------
 
+    @_repairable
     def get_user(self, handle: Optional[str] = None, id: Optional[str] = None) -> dict:
         """Read the public profile of one X user, by handle or by user id. Costs 1 credit.
 
@@ -207,6 +235,7 @@ class XdataapiToolSpec(BaseToolSpec):
             return self.client.get("/v1/users/batch", {"ids": ",".join(clean)})
         return self.client.get("/v1/users/batch", {"handles": ",".join(_handle(h) for h in handles or [])})
 
+    @_repairable
     def get_user_tweets(
         self, user: str, count: Optional[int] = None, cursor: Optional[str] = None
     ) -> dict:
@@ -221,6 +250,7 @@ class XdataapiToolSpec(BaseToolSpec):
             f"/v1/users/{_seg(_handle(user))}/tweets", {"count": self.client.cap(count), "cursor": cursor}
         )
 
+    @_repairable
     def get_followers(self, user: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:
         """Read the followers of an X user as full profiles. Costs 0.1 credit per profile.
 
@@ -236,6 +266,7 @@ class XdataapiToolSpec(BaseToolSpec):
             f"/v1/users/{_seg(_handle(user))}/followers", {"count": self.client.cap(count), "cursor": cursor}
         )
 
+    @_repairable
     def get_follower_ids(
         self, user: str, count: Optional[int] = None, cursor: Optional[str] = None
     ) -> dict:
@@ -253,6 +284,7 @@ class XdataapiToolSpec(BaseToolSpec):
             {"count": self.client.cap(count), "cursor": cursor},
         )
 
+    @_repairable
     def get_following(self, user: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:
         """Read the accounts an X user follows. Costs 0.1 credit per profile.
 

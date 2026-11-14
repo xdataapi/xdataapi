@@ -64,6 +64,14 @@ def test_a_model_argument_cannot_leave_its_path_segment():
     assert route.calls.last.request.url.raw_path.startswith(b"/v1/users/x%2F..%2F..%2Fme/tweets")
     GetTweet(client=client()).invoke({"id": "20/../../me"})
     assert route.calls.last.request.url.raw_path.startswith(b"/v1/tweets/20%2F..%2F..%2Fme")
+    # Encoding does not change a dot, so a segment of only dots is refused.
+    before = route.call_count
+    for bad in ("..", ".", " "):
+        with pytest.raises(ValueError, match="only dots"):
+            GetUserTweets(client=client()).invoke({"user": bad})
+        with pytest.raises(ValueError, match="only dots"):
+            GetTweet(client=client()).invoke({"id": bad})
+    assert route.call_count == before
     # The id route takes digits only, also when the tool is called without its schema.
     with pytest.raises(ValueError, match="numeric user id"):
         GetUser(client=client())._call(id="1/../../me")

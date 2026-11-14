@@ -27,8 +27,12 @@ def _handle(value: str) -> str:
 
 def _seg(value: Any) -> str:
     """One URL path segment. The value comes from a model, so nothing in it may
-    act as a path: a slash or a dot-dot is sent percent-encoded, not followed."""
-    return quote(str(value).strip(), safe="")
+    act as a path: a slash is sent percent-encoded, and a segment that is empty
+    or only dots ("..") is refused, because encoding does not change a dot."""
+    s = str(value).strip()
+    if s.strip(".") == "":
+        raise ValueError("a handle, user or id must not be empty or only dots")
+    return quote(s, safe="")
 
 
 def _dump(payload: dict[str, Any]) -> str:

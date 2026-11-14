@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-xdataapi",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "n8n node for xdataapi.io: read-only public X (Twitter) profiles, posts, threads, followers and search",
   "keywords": [
     "n8n-community-node-package",

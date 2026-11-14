@@ -55,9 +55,22 @@ export function cleanList(value: string, handles: boolean): string {
 		.join(',');
 }
 
+/**
+ * One URL path segment from a node field. A slash is sent percent-encoded.
+ * encodeURIComponent leaves a dot as it is, so a value that is empty or only
+ * dots ("..") is refused: it would point at another path.
+ */
+export function segment(value: string): string {
+	const clean = String(value ?? '').trim();
+	if (clean.replace(/\./g, '') === '') {
+		throw new Error('A handle, user or ID must not be empty or only dots');
+	}
+	return encodeURIComponent(clean);
+}
+
 const paths = {
-	user: (p: Params) => encodeURIComponent(cleanHandle(p.user ?? '')),
-	tweet: (p: Params) => encodeURIComponent(String(p.tweetId ?? '').trim()),
+	user: (p: Params) => segment(cleanHandle(p.user ?? '')),
+	tweet: (p: Params) => segment(String(p.tweetId ?? '')),
 };
 
 export const OPERATIONS: Record<Resource, OperationSpec[]> = {
@@ -131,7 +144,7 @@ export const OPERATIONS: Record<Resource, OperationSpec[]> = {
 			name: 'get',
 			displayName: 'Get',
 			description: 'Get the public profile of one user',
-			path: (p) => `/v1/users/${encodeURIComponent(cleanHandle(p.handle ?? ''))}`,
+			path: (p) => `/v1/users/${segment(cleanHandle(p.handle ?? ''))}`,
 			collection: 'single',
 			credits: '1 credit.',
 		},
@@ -148,7 +161,7 @@ export const OPERATIONS: Record<Resource, OperationSpec[]> = {
 			name: 'getById',
 			displayName: 'Get by ID',
 			description: 'Get the public profile of one user by numeric user ID',
-			path: (p) => `/v1/users/id/${encodeURIComponent(String(p.userId ?? '').trim())}`,
+			path: (p) => `/v1/users/id/${segment(String(p.userId ?? ''))}`,
 			collection: 'single',
 			credits: '1 credit.',
 		},

@@ -75,6 +75,11 @@ def test_a_model_argument_cannot_leave_its_path_segment():
     assert route.calls.last.request.url.raw_path.startswith(b"/v1/tweets/20%2F..%2F..%2Fme")
     # A user id is digits only; anything else never becomes a request.
     before = route.call_count
+    # Encoding does not change a dot, so a segment of only dots is refused, as data.
+    for bad in ("..", ".", " "):
+        assert s.get_user_tweets(bad)["error"]["code"] == "bad_request"
+        assert s.get_tweet(bad)["error"]["code"] == "bad_request"
+        assert s.get_user(handle=bad)["error"]["code"] == "bad_request"
     assert s.get_user(id="1/../../me")["error"]["code"] == "bad_request"
     assert s.get_users(ids=["1", "2/../me"])["error"]["code"] == "bad_request"
     assert route.call_count == before
