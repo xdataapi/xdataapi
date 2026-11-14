@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { CreateCheckoutData, CreateCheckoutErrors, CreateCheckoutResponses, GetFollowerIdsData, GetFollowerIdsErrors, GetFollowerIdsResponses, GetFollowersData, GetFollowersErrors, GetFollowersResponses, GetFollowingData, GetFollowingErrors, GetFollowingResponses, GetMeData, GetMeErrors, GetMeResponses, GetQuotesData, GetQuotesErrors, GetQuotesResponses, GetRepliesData, GetRepliesErrors, GetRepliesResponses, GetRetweetersData, GetRetweetersErrors, GetRetweetersResponses, GetThreadData, GetThreadErrors, GetThreadResponses, GetTweetData, GetTweetErrors, GetTweetResponses, GetTweetsData, GetTweetsErrors, GetTweetsResponses, GetUserData, GetUserErrors, GetUserResponses, GetUsersData, GetUsersErrors, GetUsersResponses, GetUserTweetsData, GetUserTweetsErrors, GetUserTweetsResponses, ListPacksData, ListPacksErrors, ListPacksResponses, SearchTweetsData, SearchTweetsErrors, SearchTweetsResponses } from './types.gen.js';
+import type { CreateCheckoutData, CreateCheckoutErrors, CreateCheckoutResponses, GetFollowerIdsData, GetFollowerIdsErrors, GetFollowerIdsResponses, GetFollowersData, GetFollowersErrors, GetFollowersResponses, GetFollowingData, GetFollowingErrors, GetFollowingResponses, GetMeData, GetMeErrors, GetMeResponses, GetQuotesData, GetQuotesErrors, GetQuotesResponses, GetRepliesData, GetRepliesErrors, GetRepliesResponses, GetRetweetersData, GetRetweetersErrors, GetRetweetersResponses, GetThreadData, GetThreadErrors, GetThreadResponses, GetTweetData, GetTweetErrors, GetTweetResponses, GetTweetsData, GetTweetsErrors, GetTweetsResponses, GetUserByIdData, GetUserByIdErrors, GetUserByIdResponses, GetUserData, GetUserErrors, GetUserResponses, GetUsersData, GetUsersErrors, GetUsersResponses, GetUserTweetsData, GetUserTweetsErrors, GetUserTweetsResponses, ListPacksData, ListPacksErrors, ListPacksResponses, SearchTweetsData, SearchTweetsErrors, SearchTweetsResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -55,10 +55,12 @@ export const createCheckout = <ThrowOnError extends boolean = false>(options: Op
 });
 
 /**
- * Profiles by handle, batch
+ * Profiles by handle or by user id, batch
  *
- * Up to 100 profiles in one call. 1 credit per profile found; handles that do not exist are listed in
- * `errors` and cost nothing. Duplicates are folded. Results in input order. Also `GET /v1/users/batch?handles=a,b,c`.
+ * Up to 100 profiles in one call, by handle (`handles`) or by numeric user id (`ids`). Send one of the two
+ * lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that do
+ * not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+ * Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
  * When the balance covers only part of the list, the tail comes back as `no_credits` and is not fetched.
  *
  */
@@ -70,6 +72,19 @@ export const getUsers = <ThrowOnError extends boolean = false>(options: Options<
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Profile by user id
+ *
+ * The same profile as `/v1/users/{handle}`, found by the numeric user id. The id stays the same when a
+ * user changes the handle, so it is the key to store. 1 credit per profile.
+ *
+ */
+export const getUserById = <ThrowOnError extends boolean = false>(options: Options<GetUserByIdData, ThrowOnError>): RequestResult<GetUserByIdResponses, GetUserByIdErrors, ThrowOnError> => (options.client ?? client).get<GetUserByIdResponses, GetUserByIdErrors, ThrowOnError>({
+    security: [{ name: 'x-api-key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/users/id/{id}',
+    ...options
 });
 
 /**

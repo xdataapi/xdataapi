@@ -95,17 +95,20 @@ def sync_detailed(
     body: GetUsersBody,
     fresh: bool | Unset = False,
 ) -> Response[Error | UserBatch]:
-    """Profiles by handle, batch
+    """Profiles by handle or by user id, batch
 
-     Up to 100 profiles in one call. 1 credit per profile found; handles that do not exist are listed in
-    `errors` and cost nothing. Duplicates are folded. Results in input order. Also `GET
-    /v1/users/batch?handles=a,b,c`.
+     Up to 100 profiles in one call, by handle (`handles`) or by numeric user id (`ids`). Send one of the
+    two
+    lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that
+    do
+    not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+    Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
     When the balance covers only part of the list, the tail comes back as `no_credits` and is not
     fetched.
 
     Args:
         fresh (bool | Unset):  Default: False.
-        body (GetUsersBody):
+        body (GetUsersBody): Exactly one of `handles` and `ids`.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -133,17 +136,20 @@ def sync(
     body: GetUsersBody,
     fresh: bool | Unset = False,
 ) -> Error | UserBatch | None:
-    """Profiles by handle, batch
+    """Profiles by handle or by user id, batch
 
-     Up to 100 profiles in one call. 1 credit per profile found; handles that do not exist are listed in
-    `errors` and cost nothing. Duplicates are folded. Results in input order. Also `GET
-    /v1/users/batch?handles=a,b,c`.
+     Up to 100 profiles in one call, by handle (`handles`) or by numeric user id (`ids`). Send one of the
+    two
+    lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that
+    do
+    not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+    Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
     When the balance covers only part of the list, the tail comes back as `no_credits` and is not
     fetched.
 
     Args:
         fresh (bool | Unset):  Default: False.
-        body (GetUsersBody):
+        body (GetUsersBody): Exactly one of `handles` and `ids`.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -166,17 +172,20 @@ async def asyncio_detailed(
     body: GetUsersBody,
     fresh: bool | Unset = False,
 ) -> Response[Error | UserBatch]:
-    """Profiles by handle, batch
+    """Profiles by handle or by user id, batch
 
-     Up to 100 profiles in one call. 1 credit per profile found; handles that do not exist are listed in
-    `errors` and cost nothing. Duplicates are folded. Results in input order. Also `GET
-    /v1/users/batch?handles=a,b,c`.
+     Up to 100 profiles in one call, by handle (`handles`) or by numeric user id (`ids`). Send one of the
+    two
+    lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that
+    do
+    not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+    Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
     When the balance covers only part of the list, the tail comes back as `no_credits` and is not
     fetched.
 
     Args:
         fresh (bool | Unset):  Default: False.
-        body (GetUsersBody):
+        body (GetUsersBody): Exactly one of `handles` and `ids`.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -202,17 +211,20 @@ async def asyncio(
     body: GetUsersBody,
     fresh: bool | Unset = False,
 ) -> Error | UserBatch | None:
-    """Profiles by handle, batch
+    """Profiles by handle or by user id, batch
 
-     Up to 100 profiles in one call. 1 credit per profile found; handles that do not exist are listed in
-    `errors` and cost nothing. Duplicates are folded. Results in input order. Also `GET
-    /v1/users/batch?handles=a,b,c`.
+     Up to 100 profiles in one call, by handle (`handles`) or by numeric user id (`ids`). Send one of the
+    two
+    lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that
+    do
+    not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+    Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
     When the balance covers only part of the list, the tail comes back as `no_credits` and is not
     fetched.
 
     Args:
         fresh (bool | Unset):  Default: False.
-        body (GetUsersBody):
+        body (GetUsersBody): Exactly one of `handles` and `ids`.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

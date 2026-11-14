@@ -140,8 +140,12 @@ export type TweetBatch = BatchMeta & {
  * The failure itself. `code` is stable; match on it, never on `message`.
  */
 export type ErrorBody = {
-    code: 'missing_key' | 'invalid_key' | 'rate_limited' | 'no_credits' | 'bad_request' | 'not_found' | 'access_denied' | 'product_unavailable' | 'billing_disabled' | 'upstream_rate_limited' | 'no_account' | 'upstream_error' | 'request_rejected' | 'query_id_stale' | 'internal';
+    code: 'missing_key' | 'invalid_key' | 'rate_limited' | 'no_credits' | 'email_not_allowed' | 'bad_request' | 'not_found' | 'access_denied' | 'product_unavailable' | 'billing_disabled' | 'upstream_rate_limited' | 'no_account' | 'upstream_error' | 'request_rejected' | 'query_id_stale' | 'internal';
     message: string;
+    /**
+     * Only on `no_credits`. The page where a pack is bought.
+     */
+    top_up_url?: string;
 };
 
 /**
@@ -333,8 +337,12 @@ export type CreateCheckoutResponses = {
 export type CreateCheckoutResponse = CreateCheckoutResponses[keyof CreateCheckoutResponses];
 
 export type GetUsersData = {
+    /**
+     * Exactly one of `handles` and `ids`.
+     */
     body: {
-        handles: Array<string>;
+        handles?: Array<string>;
+        ids?: Array<string>;
     };
     path?: never;
     query?: {
@@ -383,6 +391,62 @@ export type GetUsersResponses = {
 };
 
 export type GetUsersResponse = GetUsersResponses[keyof GetUsersResponses];
+
+export type GetUserByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        /**
+         * Bypass the cache. Costs 2x credits.
+         */
+        fresh?: boolean;
+    };
+    url: '/v1/users/id/{id}';
+};
+
+export type GetUserByIdErrors = {
+    /**
+     * The request itself is wrong: a bad parameter, cursor or body. Free.
+     */
+    400: Error;
+    /**
+     * Missing or invalid key. Free.
+     */
+    401: Error;
+    /**
+     * Balance is zero. Buy a pack. Free.
+     */
+    402: Error;
+    /**
+     * No such object, or it is private. Free.
+     */
+    404: Error;
+    /**
+     * Per-account rate limit. Free. Retry after `Retry-After` seconds.
+     */
+    429: Error;
+    /**
+     * A fault on our side. Free. Quote `request_id` if it persists.
+     */
+    500: Error;
+    /**
+     * Upstream failure. Free. Retry after `Retry-After` seconds.
+     */
+    503: Error;
+};
+
+export type GetUserByIdError = GetUserByIdErrors[keyof GetUserByIdErrors];
+
+export type GetUserByIdResponses = {
+    /**
+     * OK
+     */
+    200: UserResponse;
+};
+
+export type GetUserByIdResponse = GetUserByIdResponses[keyof GetUserByIdResponses];
 
 export type GetUserData = {
     body?: never;

@@ -7,6 +7,7 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.error_body_code import ErrorBodyCode
+from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="ErrorBody")
 
@@ -18,16 +19,21 @@ class ErrorBody:
     Attributes:
         code (ErrorBodyCode):
         message (str):
+        top_up_url (str | Unset): Only on `no_credits`. The page where a pack is bought. Example:
+            https://xdataapi.io/dashboard/billing.
     """
 
     code: ErrorBodyCode
     message: str
+    top_up_url: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         code = self.code.value
 
         message = self.message
+
+        top_up_url = self.top_up_url
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -37,6 +43,8 @@ class ErrorBody:
                 "message": message,
             }
         )
+        if top_up_url is not UNSET:
+            field_dict["top_up_url"] = top_up_url
 
         return field_dict
 
@@ -47,9 +55,12 @@ class ErrorBody:
 
         message = d.pop("message")
 
+        top_up_url = d.pop("top_up_url", UNSET)
+
         error_body = cls(
             code=code,
             message=message,
+            top_up_url=top_up_url,
         )
 
         error_body.additional_properties = d

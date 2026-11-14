@@ -464,10 +464,12 @@ paths:
     post:
       operationId: getUsers
       tags: [users]
-      summary: Profiles by handle, batch
+      summary: Profiles by handle or by user id, batch
       description: |
-        Up to 100 profiles in one call. 1 credit per profile found; handles that do not exist are listed in
-        `errors` and cost nothing. Duplicates are folded. Results in input order. Also `GET /v1/users/batch?handles=a,b,c`.
+        Up to 100 profiles in one call, by handle (`handles`) or by numeric user id (`ids`). Send one of the two
+        lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that do
+        not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+        Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
         When the balance covers only part of the list, the tail comes back as `no_credits` and is not fetched.
       parameters:
         - { $ref: "#/components/parameters/fresh" }
@@ -477,14 +479,35 @@ paths:
           application/json:
             schema:
               type: object
-              required: [handles]
+              description: Exactly one of `handles` and `ids`.
               properties:
                 handles: { type: array, minItems: 1, maxItems: 100, items: { type: string }, example: [x, github, vercel] }
+                ids: { type: array, minItems: 1, maxItems: 100, items: { type: string, pattern: "^[0-9]{1,19}$" }, example: ["783214", "13334762"] }
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/UserBatch" } } } }
         "400": { $ref: "#/components/responses/BadRequest", description: Bad list. }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "402": { $ref: "#/components/responses/PaymentRequired" }
+        "429": { $ref: "#/components/responses/TooMany" }
+        "500": { $ref: "#/components/responses/ServerError" }
+        "503": { $ref: "#/components/responses/Upstream" }
+  /v1/users/id/{id}:
+    get:
+      operationId: getUserById
+      tags: [users]
+      summary: Profile by user id
+      description: |
+        The same profile as `/v1/users/{handle}`, found by the numeric user id. The id stays the same when a
+        user changes the handle, so it is the key to store. 1 credit per profile.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, pattern: "^[0-9]{1,19}$" }, example: "783214" }
+        - { $ref: "#/components/parameters/fresh" }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/UserResponse" } } } }
+        "400": { $ref: "#/components/responses/BadRequest", description: The id is not a user id. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "429": { $ref: "#/components/responses/TooMany" }
         "500": { $ref: "#/components/responses/ServerError" }
         "503": { $ref: "#/components/responses/Upstream" }

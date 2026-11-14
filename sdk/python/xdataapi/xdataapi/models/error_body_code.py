@@ -5,6 +5,7 @@ class ErrorBodyCode(StrEnum):
     ACCESS_DENIED = "access_denied"
     BAD_REQUEST = "bad_request"
     BILLING_DISABLED = "billing_disabled"
+    EMAIL_NOT_ALLOWED = "email_not_allowed"
     INTERNAL = "internal"
     INVALID_KEY = "invalid_key"
     MISSING_KEY = "missing_key"
