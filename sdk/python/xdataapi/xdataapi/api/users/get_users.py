@@ -101,7 +101,8 @@ def sync_detailed(
     two
     lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that
     do
-    not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+    not exist are listed in `errors` and cost nothing. A suspended account is a `not_found` with
+    `reason: suspended`. Duplicates are folded. Results in input order.
     Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
     When the balance covers only part of the list, the tail comes back as `no_credits` and is not
     fetched.
@@ -142,7 +143,8 @@ def sync(
     two
     lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that
     do
-    not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+    not exist are listed in `errors` and cost nothing. A suspended account is a `not_found` with
+    `reason: suspended`. Duplicates are folded. Results in input order.
     Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
     When the balance covers only part of the list, the tail comes back as `no_credits` and is not
     fetched.
@@ -178,7 +180,8 @@ async def asyncio_detailed(
     two
     lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that
     do
-    not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+    not exist are listed in `errors` and cost nothing. A suspended account is a `not_found` with
+    `reason: suspended`. Duplicates are folded. Results in input order.
     Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
     When the balance covers only part of the list, the tail comes back as `no_credits` and is not
     fetched.
@@ -217,7 +220,8 @@ async def asyncio(
     two
     lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that
     do
-    not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+    not exist are listed in `errors` and cost nothing. A suspended account is a `not_found` with
+    `reason: suspended`. Duplicates are folded. Results in input order.
     Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
     When the balance covers only part of the list, the tail comes back as `no_credits` and is not
     fetched.

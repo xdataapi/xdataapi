@@ -102,7 +102,9 @@ components:
       name: fresh
       in: query
       schema: { type: boolean, default: false }
-      description: Bypass the cache. Costs 2x credits.
+      description: |
+        Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+        `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
   schemas:
     User:
       type: object
@@ -168,7 +170,7 @@ components:
         items: { type: integer, description: Objects returned. }
         credits_charged: { type: number, example: 20 }
         balance_remaining: { type: number, example: 79980 }
-        cache: { type: string, enum: [miss, hit, bypass] }
+        cache: { type: string, enum: [miss, hit, bypass], description: "`miss`: read from X, normal price. `hit`: from cache, half price. `bypass`: `fresh=true` skipped a cached copy, 2x." }
         request_id: { type: string, format: uuid }
         next_cursor: { type: string }
     TweetPage:
@@ -211,6 +213,7 @@ components:
         input: { type: string, description: The handle or id as sent. }
         code: { type: string, enum: [not_found, no_credits, access_denied, upstream_rate_limited, no_account, upstream_error, request_rejected, bad_request] }
         message: { type: string }
+        reason: { $ref: "#/components/schemas/NotFoundReason" }
     BatchMeta:
       type: object
       required: [errors, items, credits_charged, balance_remaining, cache, cache_hits, request_id]
@@ -222,7 +225,7 @@ components:
         items: { type: integer, description: Objects returned. }
         credits_charged: { type: number }
         balance_remaining: { type: number }
-        cache: { type: string, enum: [miss, hit, mixed, bypass] }
+        cache: { type: string, enum: [miss, hit, mixed, bypass], description: "The mode of the found items when they all agree, else `mixed`." }
         cache_hits: { type: integer, description: Objects served from cache, at half price. }
         request_id: { type: string, format: uuid }
     UserBatch:
@@ -237,6 +240,13 @@ components:
         - type: object
           properties:
             data: { type: array, items: { $ref: "#/components/schemas/Tweet" }, description: Found tweets, in input order. }
+    NotFoundReason:
+      type: string
+      enum: [suspended, unavailable]
+      description: |
+        Only on a profile `not_found`, and only when X says why the account is not there: `suspended`, or
+        `unavailable` for any other reason X names. Absent for an account that was deleted or never existed:
+        X does not tell those two apart.
     ErrorBody:
       description: The failure itself. `code` is stable; match on it, never on `message`.
       type: object
@@ -252,6 +262,7 @@ components:
           format: uri
           description: Only on `no_credits`. The page where a pack is bought.
           example: https://xdataapi.io/dashboard/billing
+        reason: { $ref: "#/components/schemas/NotFoundReason" }
     Error:
       description: |
         Every failure from this API, in one shape. Charged nothing, always carries a
@@ -468,7 +479,8 @@ paths:
       description: |
         Up to 100 profiles in one call, by handle (`handles`) or by numeric user id (`ids`). Send one of the two
         lists. The id stays the same when a user changes the handle. 1 credit per profile found; inputs that do
-        not exist are listed in `errors` and cost nothing. Duplicates are folded. Results in input order.
+        not exist are listed in `errors` and cost nothing. A suspended account is a `not_found` with
+        `reason: suspended`. Duplicates are folded. Results in input order.
         Also `GET /v1/users/batch?handles=a,b,c` and `GET /v1/users/batch?ids=783214,13334762`.
         When the balance covers only part of the list, the tail comes back as `no_credits` and is not fetched.
       parameters:

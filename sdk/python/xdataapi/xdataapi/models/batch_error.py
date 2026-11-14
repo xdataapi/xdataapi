@@ -7,6 +7,8 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.batch_error_code import BatchErrorCode
+from ..models.not_found_reason import NotFoundReason
+from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="BatchError")
 
@@ -18,11 +20,16 @@ class BatchError:
         input_ (str): The handle or id as sent.
         code (BatchErrorCode):
         message (str):
+        reason (NotFoundReason | Unset): Only on a profile `not_found`, and only when X says why the account is not
+            there: `suspended`, or
+            `unavailable` for any other reason X names. Absent for an account that was deleted or never existed:
+            X does not tell those two apart.
     """
 
     input_: str
     code: BatchErrorCode
     message: str
+    reason: NotFoundReason | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -31,6 +38,10 @@ class BatchError:
         code = self.code.value
 
         message = self.message
+
+        reason: str | Unset = UNSET
+        if not isinstance(self.reason, Unset):
+            reason = self.reason.value
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -41,6 +52,8 @@ class BatchError:
                 "message": message,
             }
         )
+        if reason is not UNSET:
+            field_dict["reason"] = reason
 
         return field_dict
 
@@ -53,10 +66,18 @@ class BatchError:
 
         message = d.pop("message")
 
+        _reason = d.pop("reason", UNSET)
+        reason: NotFoundReason | Unset
+        if isinstance(_reason, Unset):
+            reason = UNSET
+        else:
+            reason = NotFoundReason(_reason)
+
         batch_error = cls(
             input_=input_,
             code=code,
             message=message,
+            reason=reason,
         )
 
         batch_error.additional_properties = d

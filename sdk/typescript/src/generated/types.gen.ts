@@ -66,6 +66,9 @@ export type Meta = {
     items: number;
     credits_charged: number;
     balance_remaining: number;
+    /**
+     * `miss`: read from X, normal price. `hit`: from cache, half price. `bypass`: `fresh=true` skipped a cached copy, 2x.
+     */
     cache: 'miss' | 'hit' | 'bypass';
     request_id: string;
     next_cursor?: string;
@@ -101,6 +104,7 @@ export type BatchError = {
     input: string;
     code: 'not_found' | 'no_credits' | 'access_denied' | 'upstream_rate_limited' | 'no_account' | 'upstream_error' | 'request_rejected' | 'bad_request';
     message: string;
+    reason?: NotFoundReason;
 };
 
 export type BatchMeta = {
@@ -114,6 +118,9 @@ export type BatchMeta = {
     items: number;
     credits_charged: number;
     balance_remaining: number;
+    /**
+     * The mode of the found items when they all agree, else `mixed`.
+     */
     cache: 'miss' | 'hit' | 'mixed' | 'bypass';
     /**
      * Objects served from cache
@@ -137,6 +144,14 @@ export type TweetBatch = BatchMeta & {
 };
 
 /**
+ * Only on a profile `not_found`, and only when X says why the account is not there: `suspended`, or
+ * `unavailable` for any other reason X names. Absent for an account that was deleted or never existed:
+ * X does not tell those two apart.
+ *
+ */
+export type NotFoundReason = 'suspended' | 'unavailable';
+
+/**
  * The failure itself. `code` is stable; match on it, never on `message`.
  */
 export type ErrorBody = {
@@ -146,6 +161,7 @@ export type ErrorBody = {
      * Only on `no_credits`. The page where a pack is bought.
      */
     top_up_url?: string;
+    reason?: NotFoundReason;
 };
 
 /**
@@ -197,7 +213,9 @@ export type Problem = {
 export type Cursor = string;
 
 /**
- * Bypass the cache. Costs 2x credits.
+ * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+ * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+ *
  */
 export type Fresh = boolean;
 
@@ -347,7 +365,9 @@ export type GetUsersData = {
     path?: never;
     query?: {
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -399,7 +419,9 @@ export type GetUserByIdData = {
     };
     query?: {
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -455,7 +477,9 @@ export type GetUserData = {
     };
     query?: {
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -514,7 +538,9 @@ export type GetUserTweetsData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -573,7 +599,9 @@ export type GetFollowersData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -636,7 +664,9 @@ export type GetFollowerIdsData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -699,7 +729,9 @@ export type GetFollowingData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -762,7 +794,9 @@ export type SearchTweetsData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -818,7 +852,9 @@ export type GetTweetsData = {
     path?: never;
     query?: {
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -870,7 +906,9 @@ export type GetTweetData = {
     };
     query?: {
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -928,7 +966,9 @@ export type GetThreadData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -986,7 +1026,9 @@ export type GetRepliesData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -1045,7 +1087,9 @@ export type GetQuotesData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };
@@ -1104,7 +1148,9 @@ export type GetRetweetersData = {
          */
         cursor?: string;
         /**
-         * Bypass the cache. Costs 2x credits.
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
          */
         fresh?: boolean;
     };

@@ -21,6 +21,7 @@ from .media import Media
 from .media_type import MediaType
 from .meta import Meta
 from .meta_cache import MetaCache
+from .not_found_reason import NotFoundReason
 from .problem import Problem
 from .search_tweets_product import SearchTweetsProduct
 from .tweet import Tweet
@@ -54,6 +55,7 @@ __all__ = (
     "MediaType",
     "Meta",
     "MetaCache",
+    "NotFoundReason",
     "Problem",
     "SearchTweetsProduct",
     "Tweet",

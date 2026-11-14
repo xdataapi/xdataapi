@@ -20,7 +20,8 @@ class Meta:
         items (int): Objects returned.
         credits_charged (float):  Example: 20.
         balance_remaining (float):  Example: 79980.
-        cache (MetaCache):
+        cache (MetaCache): `miss`: read from X, normal price. `hit`: from cache, half price. `bypass`: `fresh=true`
+            skipped a cached copy, 2x.
         request_id (UUID):
         next_cursor (str | Unset):
     """

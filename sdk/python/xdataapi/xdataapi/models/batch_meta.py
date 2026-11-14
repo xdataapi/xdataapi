@@ -24,7 +24,7 @@ class BatchMeta:
         items (int): Objects returned.
         credits_charged (float):
         balance_remaining (float):
-        cache (BatchMetaCache):
+        cache (BatchMetaCache): The mode of the found items when they all agree, else `mixed`.
         cache_hits (int): Objects served from cache
         request_id (UUID):
     """
