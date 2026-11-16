@@ -159,15 +159,16 @@ export type TweetBatch = BatchMeta & {
 };
 
 /**
- * Only on a profile `not_found`, and only when X says why the account is not there: `suspended`,
+ * On each profile `not_found`, and only there: why the account is not there. `suspended`,
  * `age_restricted` (X shows the account only to a logged-in session, and did not show it to ours),
  * `deactivated` (the owner closed the account; the owner can open it again for 30 days, then X deletes
- * it), or `unavailable` for any other reason X names. Absent for an account that was deleted or never
- * existed: X does not tell those two apart. A protected account is not a `not_found`: its profile comes back with
+ * it), `unavailable` for any other reason X names, or `nonexistent` when X names no reason: the account
+ * was deleted or never existed, and X does not tell those two apart. Before 2026-11-16 the last group
+ * had no `reason`. A protected account is not a `not_found`: its profile comes back with
  * `protected: true`.
  *
  */
-export type NotFoundReason = 'suspended' | 'age_restricted' | 'deactivated' | 'unavailable';
+export type NotFoundReason = 'suspended' | 'age_restricted' | 'deactivated' | 'unavailable' | 'nonexistent';
 
 /**
  * The failure itself. `code` is stable; match on it, never on `message`.
