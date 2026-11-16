@@ -30,6 +30,15 @@ class User:
         banner_url (str | Unset):
         verified (bool | Unset):
         protected (bool | Unset):
+        withheld (bool | Unset): `true`: X put its own notice in place of the profile text. `name` and `avatar_url` are
+            empty, and
+            `bio` is the notice of X ("@handle is temporarily unavailable because it violates the X ...
+            policy."), not the words of the owner. The counts and `created_at` are those of the account.
+        age_restricted (bool | Unset): Only on a profile from `/v1/users/{handle}`, `/v1/users/id/{id}` and
+            `/v1/users/batch`. `true`: X
+            hides the account from a logged-out reader as age-restricted, and we read the profile with a
+            logged-in session. `false`: a logged-out reader gets the profile. Absent on a user in a list, in
+            search results or on a tweet: there X does not say it.
         likes (int | Unset):
         listed (int | Unset):
         pinned_tweet_ids (list[str] | Unset):
@@ -49,6 +58,8 @@ class User:
     banner_url: str | Unset = UNSET
     verified: bool | Unset = UNSET
     protected: bool | Unset = UNSET
+    withheld: bool | Unset = UNSET
+    age_restricted: bool | Unset = UNSET
     likes: int | Unset = UNSET
     listed: int | Unset = UNSET
     pinned_tweet_ids: list[str] | Unset = UNSET
@@ -82,6 +93,10 @@ class User:
         verified = self.verified
 
         protected = self.protected
+
+        withheld = self.withheld
+
+        age_restricted = self.age_restricted
 
         likes = self.likes
 
@@ -118,6 +133,10 @@ class User:
             field_dict["verified"] = verified
         if protected is not UNSET:
             field_dict["protected"] = protected
+        if withheld is not UNSET:
+            field_dict["withheld"] = withheld
+        if age_restricted is not UNSET:
+            field_dict["age_restricted"] = age_restricted
         if likes is not UNSET:
             field_dict["likes"] = likes
         if listed is not UNSET:
@@ -158,6 +177,10 @@ class User:
 
         protected = d.pop("protected", UNSET)
 
+        withheld = d.pop("withheld", UNSET)
+
+        age_restricted = d.pop("age_restricted", UNSET)
+
         likes = d.pop("likes", UNSET)
 
         listed = d.pop("listed", UNSET)
@@ -179,6 +202,8 @@ class User:
             banner_url=banner_url,
             verified=verified,
             protected=protected,
+            withheld=withheld,
+            age_restricted=age_restricted,
             likes=likes,
             listed=listed,
             pinned_tweet_ids=pinned_tweet_ids,

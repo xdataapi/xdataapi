@@ -15,6 +15,21 @@ export type User = {
     banner_url?: string;
     verified?: boolean;
     protected?: boolean;
+    /**
+     * `true`: X put its own notice in place of the profile text. `name` and `avatar_url` are empty, and
+     * `bio` is the notice of X ("@handle is temporarily unavailable because it violates the X ...
+     * policy."), not the words of the owner. The counts and `created_at` are those of the account.
+     *
+     */
+    withheld?: boolean;
+    /**
+     * Only on a profile from `/v1/users/{handle}`, `/v1/users/id/{id}` and `/v1/users/batch`. `true`: X
+     * hides the account from a logged-out reader as age-restricted, and we read the profile with a
+     * logged-in session. `false`: a logged-out reader gets the profile. Absent on a user in a list, in
+     * search results or on a tweet: there X does not say it.
+     *
+     */
+    age_restricted?: boolean;
     followers: number;
     following: number;
     tweets: number;
