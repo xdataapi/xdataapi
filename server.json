@@ -3,8 +3,24 @@
   "name": "io.xdataapi/xdataapi",
   "title": "xdataapi: X (Twitter) data",
   "description": "Read-only public X (Twitter) data: profiles, tweets, threads, followers, search. Pay per result.",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "websiteUrl": "https://xdataapi.io/docs/mcp",
+  "icons": [
+    {
+      "src": "https://xdataapi.io/apple-icon",
+      "mimeType": "image/png",
+      "sizes": [
+        "180x180"
+      ]
+    },
+    {
+      "src": "https://xdataapi.io/icon.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": [
+        "any"
+      ]
+    }
+  ],
   "remotes": [
     {
       "type": "streamable-http",
