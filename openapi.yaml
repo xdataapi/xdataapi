@@ -563,7 +563,7 @@ paths:
       operationId: getUserTweets
       tags: [users]
       summary: Latest tweets of a user
-      description: 1 credit per tweet. `user` is a numeric id or a handle.
+      description: Newest first, retweets included. A pinned tweet is in its place by date. 1 credit per tweet. `user` is a numeric id or a handle.
       parameters:
         - { name: user, in: path, required: true, schema: { type: string } }
         - { name: count, in: query, schema: { type: integer, default: 20, maximum: 100 } }
