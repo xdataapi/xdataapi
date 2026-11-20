@@ -265,9 +265,13 @@ class XdataapiToolSpec(BaseToolSpec):
         clean = [str(i).strip() for i in ids]
         if not clean or not all(_USER_ID.match(i) for i in clean):
             return _bad_request("ids must be numeric user ids")
+        if len(clean) > 50:
+            return _bad_request("at most 50 ids in one call")
         if count is not None and not 1 <= count <= 20:
             return _bad_request("count must be from 1 to 20")
-        return self.client.get("/v1/users/tweets/batch", {"ids": ",".join(clean), "count": count})
+        # max_results caps the posts for each user, as it caps a page elsewhere.
+        per_user = self.client.cap(count if count is not None else 3)
+        return self.client.get("/v1/users/tweets/batch", {"ids": ",".join(clean), "count": per_user})
 
     @_repairable
     def get_followers(self, user: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:

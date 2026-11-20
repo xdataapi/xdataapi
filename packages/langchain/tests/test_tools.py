@@ -209,7 +209,18 @@ def test_users_tweets_batch_sends_ids_and_count():
         GetUsersTweets(client=client()).invoke({"ids": ["813286"], "count": 21})
     with pytest.raises(ValueError, match="numeric user ids"):
         GetUsersTweets(client=client())._call(ids=["jack"])
+    with pytest.raises(Exception):
+        GetUsersTweets(client=client()).invoke({"ids": [str(i) for i in range(1, 52)]})
+    with pytest.raises(ValueError, match="at most 50"):
+        GetUsersTweets(client=client())._call(ids=[str(i) for i in range(1, 52)])
     assert route.call_count == 1
+    # max_results caps the posts for each user, also when count is left out.
+    GetUsersTweets(client=client(max_results=2)).invoke({"ids": ["1"], "count": 10})
+    assert route.calls.last.request.url.params["count"] == "2"
+    GetUsersTweets(client=client(max_results=2)).invoke({"ids": ["1"]})
+    assert route.calls.last.request.url.params["count"] == "2"
+    GetUsersTweets(client=client(max_results=50)).invoke({"ids": ["1"]})
+    assert route.calls.last.request.url.params["count"] == "3"
 
 
 @respx.mock

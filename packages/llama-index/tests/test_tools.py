@@ -104,7 +104,15 @@ def test_users_tweets_batch_sends_ids_and_count():
     s = spec()
     assert s.get_users_tweets(ids=["jack"])["error"]["code"] == "bad_request"
     assert s.get_users_tweets(ids=["1"], count=21)["error"]["code"] == "bad_request"
+    assert s.get_users_tweets(ids=[str(i) for i in range(1, 52)])["error"]["code"] == "bad_request"
     assert route.call_count == 1
+    # max_results caps the posts for each user, also when count is left out.
+    spec(max_results=2).get_users_tweets(ids=["1"], count=10)
+    assert route.calls.last.request.url.params["count"] == "2"
+    spec(max_results=2).get_users_tweets(ids=["1"])
+    assert route.calls.last.request.url.params["count"] == "2"
+    spec(max_results=50).get_users_tweets(ids=["1"])
+    assert route.calls.last.request.url.params["count"] == "3"
 
 
 @respx.mock

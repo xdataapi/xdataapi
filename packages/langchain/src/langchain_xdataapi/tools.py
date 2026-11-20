@@ -164,7 +164,9 @@ class GetUserTweets(_Base):
 
 class _UsersTweetsArgs(BaseModel):
     ids: Sequence[str] = Field(
-        description="Up to 50 numeric user ids in one call. x_get_users gives the id of a handle."
+        min_length=1,
+        max_length=50,
+        description="Up to 50 numeric user ids in one call. x_get_users gives the id of a handle.",
     )
     count: int | None = Field(default=None, ge=1, le=20, description="Posts for each user, 1 to 20. Default 3.")
     fresh: bool | None = Field(default=None, description="Skip the cache. Costs double.")
@@ -185,7 +187,11 @@ class GetUsersTweets(_Base):
         clean = [str(i).strip() for i in ids]
         if not clean or any(not _USER_ID.match(i) for i in clean):
             raise ValueError("ids must be numeric user ids")
-        return "/v1/users/tweets/batch", {"ids": ",".join(clean), "count": count, "fresh": fresh}
+        if len(clean) > 50:
+            raise ValueError("at most 50 ids in one call")
+        # max_results caps the posts for each user, as it caps a page elsewhere.
+        per_user = self.client.cap(count if count is not None else 3)
+        return "/v1/users/tweets/batch", {"ids": ",".join(clean), "count": per_user, "fresh": fresh}
 
 
 class GetFollowers(_Base):
