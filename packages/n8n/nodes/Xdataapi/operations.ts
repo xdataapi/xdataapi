@@ -35,6 +35,8 @@ export interface Params {
 	handles?: string;
 	userId?: string;
 	userIds?: string;
+	/** Posts for each user in the posts batch. */
+	perUser?: number;
 	user?: string;
 	count?: number;
 	cursor?: string;
@@ -182,6 +184,16 @@ export const OPERATIONS: Record<Resource, OperationSpec[]> = {
 			paged: true,
 			collection: 'data',
 			credits: '1 credit per post.',
+		},
+		{
+			name: 'getManyTweets',
+			displayName: 'Get Posts of Many',
+			description:
+				'Get the latest posts of up to 50 users in one request by numeric user ID, one item per user',
+			path: () => '/v1/users/tweets/batch',
+			query: (p) => ({ ids: cleanList(p.userIds ?? '', false), count: p.perUser }),
+			collection: 'data',
+			credits: '1 credit per post. A user with no public posts costs nothing.',
 		},
 		{
 			name: 'getFollowers',

@@ -63,7 +63,7 @@ describe('the operation table', () => {
 
 	it('offers every read the API has', () => {
 		const names = Object.values(OPERATIONS).flat().length;
-		expect(names).toBe(16);
+		expect(names).toBe(17);
 	});
 });
 
@@ -236,6 +236,25 @@ describe('shapes the API returns', () => {
 		expect(requests[0].url).toBe('/v1/users/batch');
 		expect(requests[0].qs).toEqual({ ids: '783214,13334762' });
 		expect(out).toHaveLength(2);
+	});
+
+	it('gets the latest posts of many users, one item per user', async () => {
+		const { ctx, requests } = context(
+			{ resource: 'user', operation: 'getManyTweets', userIds: '813286, 783214', perUser: 3 },
+			[
+				{
+					data: [
+						{ user_id: '813286', tweets: [{ id: '1' }, { id: '2' }, { id: '3' }] },
+						{ user_id: '783214', tweets: [] },
+					],
+				},
+			],
+		);
+		const out = await run(ctx);
+		expect(requests).toHaveLength(1);
+		expect(requests[0].url).toBe('/v1/users/tweets/batch');
+		expect(requests[0].qs).toEqual({ ids: '813286,783214', count: 3 });
+		expect(out.map((o) => (o.json as Body).user_id)).toEqual(['813286', '783214']);
 	});
 
 	it('reports the inputs a batch skipped, with the metadata option on', async () => {

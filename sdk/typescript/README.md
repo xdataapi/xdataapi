@@ -26,8 +26,8 @@ Every call returns `{ data, error, response }`. On a non-2xx status `data` is un
 API error with its `code` (`no_credits`, `not_found`, `rate_limited`, ...). Works in Node 18+, Bun, Deno,
 browsers and edge runtimes; it uses `fetch`.
 
-Methods: `getMe`, `listPacks`, `createCheckout`, `getUser`, `getUsers`, `getUserTweets`, `getFollowers`,
-`getFollowing`, `searchTweets`, `getTweet`, `getTweets`, `getThread`, `getReplies`, `getQuotes`,
-`getRetweeters`. Pagination: pass `next_cursor` from a page back as `query.cursor`.
+Methods: `getMe`, `listPacks`, `createCheckout`, `getUser`, `getUserById`, `getUsers`, `getUserTweets`,
+`getUsersTweets`, `getFollowers`, `getFollowerIds`, `getFollowing`, `searchTweets`, `getTweet`, `getTweets`,
+`getThread`, `getReplies`, `getQuotes`, `getRetweeters`. Pagination: pass `next_cursor` from a page back as `query.cursor`.
 
 Docs: https://xdataapi.io/docs. API reference: https://xdataapi.io/reference.

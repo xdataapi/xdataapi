@@ -45,6 +45,7 @@ and no card. In n8n add an **xdataapi API** credential and paste the key. The cr
 | Get by ID | One profile by numeric user id, which stays when the handle changes | 1 |
 | Get Many by ID | Up to 100 profiles in one request, by numeric user id | 1 per profile found |
 | Get Posts | Latest posts of a user | 1 per post |
+| Get Posts of Many | Latest posts of up to 50 users in one request, by numeric user id; one item per user | 1 per post |
 | Get Followers | Followers, as full profiles | 0.1 per profile |
 | Get Follower IDs | Follower ids only, five times cheaper | 0.02 per id |
 | Get Following | Accounts a user follows | 0.1 per profile |

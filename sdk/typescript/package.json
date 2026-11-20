@@ -1,6 +1,6 @@
 {
   "name": "xdataapi",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "TypeScript client for the xdataapi.io API: read-only X (Twitter) profiles, tweets, threads, search.",
   "license": "MIT",
   "type": "module",

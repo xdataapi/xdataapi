@@ -9,6 +9,7 @@ from langchain_xdataapi import (
     GetTweets,
     GetUser,
     GetUsers,
+    GetUsersTweets,
     SearchTweets,
     XdataapiAuthError,
     XdataapiClient,
@@ -196,6 +197,22 @@ def test_balance_takes_no_arguments_and_reads_me():
 
 
 @respx.mock
+def test_users_tweets_batch_sends_ids_and_count():
+    route = respx.get(f"{BASE}/v1/users/tweets/batch").mock(
+        return_value=httpx.Response(200, json={"data": [], "credits_charged": 0})
+    )
+    GetUsersTweets(client=client()).invoke({"ids": ["813286", " 783214"], "count": 3})
+    params = route.calls.last.request.url.params
+    assert params["ids"] == "813286,783214"
+    assert params["count"] == "3"
+    with pytest.raises(Exception):
+        GetUsersTweets(client=client()).invoke({"ids": ["813286"], "count": 21})
+    with pytest.raises(ValueError, match="numeric user ids"):
+        GetUsersTweets(client=client())._call(ids=["jack"])
+    assert route.call_count == 1
+
+
+@respx.mock
 async def test_the_async_path_calls_the_same_url():
     route = respx.get(f"{BASE}/v1/users/x").mock(return_value=httpx.Response(200, json={"data": {}}))
     await GetUser(client=client()).ainvoke({"handle": "x"})
@@ -205,8 +222,8 @@ async def test_the_async_path_calls_the_same_url():
 def test_the_toolkit_offers_every_tool_once():
     tools = XdataapiToolkit.from_api_key("xd_live_test").get_tools()
     names = [t.name for t in tools]
-    assert len(names) == 14
-    assert len(set(names)) == 14
+    assert len(names) == 15
+    assert len(set(names)) == 15
     assert "x_search_tweets" in names
 
 

@@ -25,10 +25,11 @@ from .tools import (
     GetUser,
     GetUserTweets,
     GetUsers,
+    GetUsersTweets,
     SearchTweets,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.4"
 
 __all__ = [
     "ALL_TOOLS",
@@ -45,6 +46,7 @@ __all__ = [
     "GetUser",
     "GetUserTweets",
     "GetUsers",
+    "GetUsersTweets",
     "SearchTweets",
     "XdataapiAuthError",
     "XdataapiClient",

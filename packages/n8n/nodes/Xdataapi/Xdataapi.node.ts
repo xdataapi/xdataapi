@@ -141,8 +141,18 @@ export class Xdataapi implements INodeType {
 				required: true,
 				default: '',
 				placeholder: '783214,13334762',
-				description: 'Numeric user IDs, comma separated. At most 100 in one request.',
-				displayOptions: { show: { resource: ['user'], operation: ['getManyById'] } },
+				description:
+					'Numeric user IDs, comma separated. At most 100 in one request, 50 for Get Posts of Many.',
+				displayOptions: { show: { resource: ['user'], operation: ['getManyById', 'getManyTweets'] } },
+			},
+			{
+				displayName: 'Posts per User',
+				name: 'perUser',
+				type: 'number',
+				typeOptions: { minValue: 1, maxValue: 20 },
+				default: 3,
+				description: 'How many of the latest posts to get for each user, 1 to 20',
+				displayOptions: { show: { resource: ['user'], operation: ['getManyTweets'] } },
 			},
 			{
 				displayName: 'User',
@@ -238,6 +248,10 @@ export class Xdataapi implements INodeType {
 					handles: this.getNodeParameter('handles', i, '') as string,
 					userId: this.getNodeParameter('userId', i, '') as string,
 					userIds: this.getNodeParameter('userIds', i, '') as string,
+					perUser:
+						operation === 'getManyTweets'
+							? (this.getNodeParameter('perUser', i, 3) as number)
+							: undefined,
 					user: this.getNodeParameter('user', i, '') as string,
 					fresh: options.fresh === true ? true : undefined,
 				};

@@ -24,7 +24,7 @@ def test_every_named_function_exists():
 
 def test_the_tool_list_carries_all_of_them():
     tools = spec().to_tool_list()
-    assert len(tools) == 14
+    assert len(tools) == 15
     assert {t.metadata.name for t in tools} == set(XdataapiToolSpec.spec_functions)
 
 
@@ -92,6 +92,19 @@ def test_users_batch_by_ids_sends_ids_and_no_handles():
     params = route.calls.last.request.url.params
     assert params["ids"] == "783214,13334762"
     assert "handles" not in params
+
+
+@respx.mock
+def test_users_tweets_batch_sends_ids_and_count():
+    route = respx.get(f"{BASE}/v1/users/tweets/batch").mock(return_value=httpx.Response(200, json={"data": []}))
+    spec().get_users_tweets(ids=["813286", " 783214"], count=3)
+    params = route.calls.last.request.url.params
+    assert params["ids"] == "813286,783214"
+    assert params["count"] == "3"
+    s = spec()
+    assert s.get_users_tweets(ids=["jack"])["error"]["code"] == "bad_request"
+    assert s.get_users_tweets(ids=["1"], count=21)["error"]["code"] == "bad_request"
+    assert route.call_count == 1
 
 
 @respx.mock

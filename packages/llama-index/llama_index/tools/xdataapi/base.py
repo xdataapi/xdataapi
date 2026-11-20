@@ -74,6 +74,7 @@ class XdataapiToolSpec(BaseToolSpec):
         "get_user",
         "get_users",
         "get_user_tweets",
+        "get_users_tweets",
         "get_tweet",
         "get_tweets",
         "get_thread",
@@ -249,6 +250,24 @@ class XdataapiToolSpec(BaseToolSpec):
         return self.client.get(
             f"/v1/users/{_seg(_handle(user))}/tweets", {"count": self.client.cap(count), "cursor": cursor}
         )
+
+    def get_users_tweets(self, ids: List[str], count: Optional[int] = None) -> dict:
+        """Read the latest posts of up to 50 X users in ONE call, by user id.
+
+        One entry per user, newest first. Prefer this over repeated
+        get_user_tweets calls. Costs 1 credit per post; a user with no public
+        posts is an empty list and costs nothing.
+
+        Args:
+            ids: Numeric user ids, at most 50. get_users gives the id of a handle.
+            count: Posts for each user, 1 to 20. Default 3.
+        """
+        clean = [str(i).strip() for i in ids]
+        if not clean or not all(_USER_ID.match(i) for i in clean):
+            return _bad_request("ids must be numeric user ids")
+        if count is not None and not 1 <= count <= 20:
+            return _bad_request("count must be from 1 to 20")
+        return self.client.get("/v1/users/tweets/batch", {"ids": ",".join(clean), "count": count})
 
     @_repairable
     def get_followers(self, user: str, count: Optional[int] = None, cursor: Optional[str] = None) -> dict:

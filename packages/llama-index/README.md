@@ -48,6 +48,7 @@ XdataapiToolSpec().search_tweets(q="from:vercel since:2026-09-01", count=10)
 | `get_user` | One profile, by `handle` or by numeric user `id` | 1 |
 | `get_users` | Up to 100 profiles in one call, by `handles` or by `ids` | 1 per profile |
 | `get_user_tweets` | Latest posts of a user | 1 per post |
+| `get_users_tweets` | Latest posts of up to 50 users in one call, by `ids` | 1 per post |
 | `get_tweet` | One post | 1 |
 | `get_tweets` | Up to 100 posts in one call | 1 per post |
 | `get_thread` | A post with its thread and replies | 1 per post |

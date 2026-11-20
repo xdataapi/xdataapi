@@ -162,6 +162,32 @@ class GetUserTweets(_Base):
         }
 
 
+class _UsersTweetsArgs(BaseModel):
+    ids: Sequence[str] = Field(
+        description="Up to 50 numeric user ids in one call. x_get_users gives the id of a handle."
+    )
+    count: int | None = Field(default=None, ge=1, le=20, description="Posts for each user, 1 to 20. Default 3.")
+    fresh: bool | None = Field(default=None, description="Skip the cache. Costs double.")
+
+
+class GetUsersTweets(_Base):
+    name: str = "x_get_users_tweets"
+    description: str = (
+        "Latest posts of up to 50 X users in ONE call, by numeric user id: count posts for each "
+        "user, newest first, one entry per user. Prefer this over repeated x_get_user_tweets calls. "
+        "Costs 1 credit per post; a user with no public posts is an empty list and costs nothing."
+    )
+    args_schema: type[BaseModel] = _UsersTweetsArgs
+
+    def _call(
+        self, ids: Sequence[str], count: int | None = None, fresh: bool | None = None
+    ) -> tuple[str, dict[str, Any] | None]:
+        clean = [str(i).strip() for i in ids]
+        if not clean or any(not _USER_ID.match(i) for i in clean):
+            raise ValueError("ids must be numeric user ids")
+        return "/v1/users/tweets/batch", {"ids": ",".join(clean), "count": count, "fresh": fresh}
+
+
 class GetFollowers(_Base):
     name: str = "x_get_followers"
     description: str = (
@@ -391,6 +417,7 @@ ALL_TOOLS: tuple[type[_Base], ...] = (
     GetUser,
     GetUsers,
     GetUserTweets,
+    GetUsersTweets,
     GetTweet,
     GetTweets,
     GetThread,
