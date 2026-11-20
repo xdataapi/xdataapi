@@ -1,7 +1,7 @@
 {
   "name": "xdataapi",
   "displayName": "xdataapi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read public X (Twitter) data: profiles, posts, threads, replies, quotes, followers and search with the x.com operators. Read-only.",
   "author": { "name": "xdataapi.io", "email": "hello@xdataapi.io", "url": "https://xdataapi.io" },
   "homepage": "https://xdataapi.io/docs/mcp",

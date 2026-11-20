@@ -12,7 +12,7 @@
       "source": "./plugins/xdataapi",
       "displayName": "xdataapi",
       "description": "Read public X (Twitter) data: profiles, posts, threads, replies, quotes, followers and search with the x.com operators. Hosted MCP server, OAuth sign-in, pay per result.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "data",
       "license": "MIT",
       "homepage": "https://xdataapi.io/docs/mcp",

@@ -12,15 +12,21 @@ Each call spends credits from the user's balance. Read the two rules below befor
 
 ## Rule 1: batch, never loop
 
-`get_users` takes up to 100 handles and `get_tweets` up to 100 ids, each in one request. Ten single
-reads cost the same credits as one batch of ten but take ten round trips and ten rate-limit slots.
+`get_users` takes up to 100 handles and `get_tweets` up to 100 ids, each in one request.
+`get_users_tweets` takes up to 50 user ids and gives the latest `count` posts of each (default 3).
+Ten single reads cost the same credits as one batch of ten but take ten round trips and ten
+rate-limit slots.
 
 ```
 get_users(handles=["vercel", "github", "x"])      # one call
 get_tweets(ids=["20", "21", "22"])                # one call
+get_users_tweets(ids=["783214", "813286"])        # latest 3 posts of each, one call
 ```
 
-Reach for a single `get_user` or `get_tweet` only when there is genuinely one subject.
+`get_users_tweets` takes numeric user ids only. For handles, get the ids from `get_users` first.
+
+Reach for a single `get_user`, `get_tweet` or `get_user_tweets` only when there is genuinely one
+subject.
 
 ## Rule 2: ask for what you need
 
@@ -35,7 +41,7 @@ cached read costs half.
 
 | Tool | Cost |
 |---|---|
-| `search_tweets`, `get_tweet`, `get_tweets`, `get_user`, `get_users`, `get_user_tweets`, `get_thread`, `get_replies`, `get_quotes` | 1 credit per result |
+| `search_tweets`, `get_tweet`, `get_tweets`, `get_user`, `get_users`, `get_user_tweets`, `get_users_tweets`, `get_thread`, `get_replies`, `get_quotes` | 1 credit per result |
 | `get_retweeters` | 0.5 per profile |
 | `get_followers`, `get_following` | 0.1 per profile |
 | `get_follower_ids` | 0.02 per id |
@@ -80,6 +86,7 @@ some reading sessions; that refusal is HTTP 403 and costs nothing, so fall back 
 |---|---|
 | What is being said about X? | `search_tweets` |
 | What did this account post? | `get_user_tweets` |
+| What did these accounts post lately? | `get_users_tweets` |
 | Who is this account? | `get_user`, or `get_users` for several |
 | What is in this thread? | `get_thread` — the whole conversation in one call |
 | How did people answer this post? | `get_replies`, and `get_quotes` for commentary |
