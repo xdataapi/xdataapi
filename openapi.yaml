@@ -8,6 +8,7 @@ info:
     `credits_charged`, `balance_remaining`, `cache` and `request_id`.
 
     Batch reads: `/v1/users/batch` and `/v1/tweets/batch` take up to 100 handles or ids per call.
+    `/v1/users/tweets/batch` gives the newest tweets of up to 50 users per call.
     MCP: the same data is served to agents at `https://api.xdataapi.io/mcp` (Streamable HTTP, same key).
     Docs for agents: `https://xdataapi.io/llms.txt`.
 
@@ -235,11 +236,11 @@ components:
           type: array
           description: Inputs that returned nothing, with the reason. Never charged.
           items: { $ref: "#/components/schemas/BatchError" }
-        items: { type: integer, description: Objects returned. }
+        items: { type: integer, description: "Objects returned. In the timelines batch: tweets returned, for all users together." }
         credits_charged: { type: number }
         balance_remaining: { type: number }
         cache: { type: string, enum: [miss, hit, mixed, bypass], description: "The mode of the found items when they all agree, else `mixed`." }
-        cache_hits: { type: integer, description: Objects served from cache, at half price. }
+        cache_hits: { type: integer, description: "Objects served from cache, at half price. In the timelines batch: users served from cache." }
         request_id: { type: string, format: uuid }
     UserBatch:
       allOf:
@@ -253,6 +254,19 @@ components:
         - type: object
           properties:
             data: { type: array, items: { $ref: "#/components/schemas/Tweet" }, description: Found tweets, in input order. }
+    UserTimeline:
+      type: object
+      required: [user_id, tweets]
+      properties:
+        user_id: { type: string, description: The user id from the request. }
+        tweets: { type: array, items: { $ref: "#/components/schemas/Tweet" }, description: "Newest first. Empty when the user has no public tweets." }
+        next_cursor: { type: string, description: "Send it to `/v1/users/{user}/tweets` as `cursor` to read on. Not there on the last page." }
+    TimelineBatch:
+      allOf:
+        - $ref: "#/components/schemas/BatchMeta"
+        - type: object
+          properties:
+            data: { type: array, items: { $ref: "#/components/schemas/UserTimeline" }, description: One entry for each user that was read, in input order. }
     NotFoundReason:
       type: string
       enum: [suspended, age_restricted, deactivated, unavailable, nonexistent]
@@ -516,6 +530,42 @@ paths:
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/UserBatch" } } } }
         "400": { $ref: "#/components/responses/BadRequest", description: Bad list. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+        "429": { $ref: "#/components/responses/TooMany" }
+        "500": { $ref: "#/components/responses/ServerError" }
+        "503": { $ref: "#/components/responses/Upstream" }
+  /v1/users/tweets/batch:
+    post:
+      operationId: getUsersTweets
+      tags: [users]
+      summary: Latest tweets of many users, batch
+      description: |
+        The newest tweets of up to 50 users in one call, by numeric user id: `count` tweets for each user (1 to
+        20, default 3). Newest first, retweets included, a pinned tweet in its place by date, as on
+        `/v1/users/{user}/tweets`. 1 credit per tweet returned. A user with no public tweets is an entry with an
+        empty `tweets` list and costs nothing; the profile (`/v1/users/batch`) tells you if the account is
+        protected or suspended. A user that could not be read is in `errors` and costs nothing. Duplicates are
+        folded. Results in input order.
+        The `next_cursor` of an entry continues that timeline on `/v1/users/{user}/tweets`.
+        Also `GET /v1/users/tweets/batch?ids=783214,813286&count=3`.
+        When the balance covers only part of the list, the tail comes back as `no_credits` and is not fetched.
+        The limit counts `count` tweets for each user.
+      parameters:
+        - { $ref: "#/components/parameters/fresh" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids: { type: array, minItems: 1, maxItems: 50, items: { type: string, pattern: "^[0-9]{1,19}$" }, example: ["783214", "813286"] }
+                count: { type: integer, minimum: 1, maximum: 20, default: 3, description: Tweets for each user. }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/TimelineBatch" } } } }
+        "400": { $ref: "#/components/responses/BadRequest", description: Bad list or bad count. }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "402": { $ref: "#/components/responses/PaymentRequired" }
         "429": { $ref: "#/components/responses/TooMany" }

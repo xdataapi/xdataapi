@@ -101,7 +101,8 @@ def sync_detailed(
 ) -> Response[Error | TweetPage]:
     """Latest tweets of a user
 
-     1 credit per tweet. `user` is a numeric id or a handle.
+     Newest first, retweets included. A pinned tweet is in its place by date. 1 credit per tweet. `user`
+    is a numeric id or a handle.
 
     Args:
         user (str):
@@ -141,7 +142,8 @@ def sync(
 ) -> Error | TweetPage | None:
     """Latest tweets of a user
 
-     1 credit per tweet. `user` is a numeric id or a handle.
+     Newest first, retweets included. A pinned tweet is in its place by date. 1 credit per tweet. `user`
+    is a numeric id or a handle.
 
     Args:
         user (str):
@@ -176,7 +178,8 @@ async def asyncio_detailed(
 ) -> Response[Error | TweetPage]:
     """Latest tweets of a user
 
-     1 credit per tweet. `user` is a numeric id or a handle.
+     Newest first, retweets included. A pinned tweet is in its place by date. 1 credit per tweet. `user`
+    is a numeric id or a handle.
 
     Args:
         user (str):
@@ -214,7 +217,8 @@ async def asyncio(
 ) -> Error | TweetPage | None:
     """Latest tweets of a user
 
-     1 credit per tweet. `user` is a numeric id or a handle.
+     Newest first, retweets included. A pinned tweet is in its place by date. 1 credit per tweet. `user`
+    is a numeric id or a handle.
 
     Args:
         user (str):

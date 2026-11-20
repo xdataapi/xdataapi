@@ -13,6 +13,7 @@ from .error_body_code import ErrorBodyCode
 from .get_me_response_200 import GetMeResponse200
 from .get_tweets_body import GetTweetsBody
 from .get_users_body import GetUsersBody
+from .get_users_tweets_body import GetUsersTweetsBody
 from .id_page import IdPage
 from .list_packs_response_200 import ListPacksResponse200
 from .list_packs_response_200_data_item import ListPacksResponse200DataItem
@@ -24,6 +25,7 @@ from .meta_cache import MetaCache
 from .not_found_reason import NotFoundReason
 from .problem import Problem
 from .search_tweets_product import SearchTweetsProduct
+from .timeline_batch import TimelineBatch
 from .tweet import Tweet
 from .tweet_batch import TweetBatch
 from .tweet_page import TweetPage
@@ -32,6 +34,7 @@ from .user import User
 from .user_batch import UserBatch
 from .user_page import UserPage
 from .user_response import UserResponse
+from .user_timeline import UserTimeline
 
 __all__ = (
     "BatchError",
@@ -47,6 +50,7 @@ __all__ = (
     "GetMeResponse200",
     "GetTweetsBody",
     "GetUsersBody",
+    "GetUsersTweetsBody",
     "IdPage",
     "ListPacksResponse200",
     "ListPacksResponse200DataItem",
@@ -58,6 +62,7 @@ __all__ = (
     "NotFoundReason",
     "Problem",
     "SearchTweetsProduct",
+    "TimelineBatch",
     "Tweet",
     "TweetBatch",
     "TweetPage",
@@ -66,4 +71,5 @@ __all__ = (
     "UserBatch",
     "UserPage",
     "UserResponse",
+    "UserTimeline",
 )

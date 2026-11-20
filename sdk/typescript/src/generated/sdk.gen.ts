@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { CreateCheckoutData, CreateCheckoutErrors, CreateCheckoutResponses, GetFollowerIdsData, GetFollowerIdsErrors, GetFollowerIdsResponses, GetFollowersData, GetFollowersErrors, GetFollowersResponses, GetFollowingData, GetFollowingErrors, GetFollowingResponses, GetMeData, GetMeErrors, GetMeResponses, GetQuotesData, GetQuotesErrors, GetQuotesResponses, GetRepliesData, GetRepliesErrors, GetRepliesResponses, GetRetweetersData, GetRetweetersErrors, GetRetweetersResponses, GetThreadData, GetThreadErrors, GetThreadResponses, GetTweetData, GetTweetErrors, GetTweetResponses, GetTweetsData, GetTweetsErrors, GetTweetsResponses, GetUserByIdData, GetUserByIdErrors, GetUserByIdResponses, GetUserData, GetUserErrors, GetUserResponses, GetUsersData, GetUsersErrors, GetUsersResponses, GetUserTweetsData, GetUserTweetsErrors, GetUserTweetsResponses, ListPacksData, ListPacksErrors, ListPacksResponses, SearchTweetsData, SearchTweetsErrors, SearchTweetsResponses } from './types.gen.js';
+import type { CreateCheckoutData, CreateCheckoutErrors, CreateCheckoutResponses, GetFollowerIdsData, GetFollowerIdsErrors, GetFollowerIdsResponses, GetFollowersData, GetFollowersErrors, GetFollowersResponses, GetFollowingData, GetFollowingErrors, GetFollowingResponses, GetMeData, GetMeErrors, GetMeResponses, GetQuotesData, GetQuotesErrors, GetQuotesResponses, GetRepliesData, GetRepliesErrors, GetRepliesResponses, GetRetweetersData, GetRetweetersErrors, GetRetweetersResponses, GetThreadData, GetThreadErrors, GetThreadResponses, GetTweetData, GetTweetErrors, GetTweetResponses, GetTweetsData, GetTweetsErrors, GetTweetsResponses, GetUserByIdData, GetUserByIdErrors, GetUserByIdResponses, GetUserData, GetUserErrors, GetUserResponses, GetUsersData, GetUsersErrors, GetUsersResponses, GetUsersTweetsData, GetUsersTweetsErrors, GetUsersTweetsResponses, GetUserTweetsData, GetUserTweetsErrors, GetUserTweetsResponses, ListPacksData, ListPacksErrors, ListPacksResponses, SearchTweetsData, SearchTweetsErrors, SearchTweetsResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -77,6 +77,31 @@ export const getUsers = <ThrowOnError extends boolean = false>(options: Options<
 });
 
 /**
+ * Latest tweets of many users, batch
+ *
+ * The newest tweets of up to 50 users in one call, by numeric user id: `count` tweets for each user (1 to
+ * 20, default 3). Newest first, retweets included, a pinned tweet in its place by date, as on
+ * `/v1/users/{user}/tweets`. 1 credit per tweet returned. A user with no public tweets is an entry with an
+ * empty `tweets` list and costs nothing; the profile (`/v1/users/batch`) tells you if the account is
+ * protected or suspended. A user that could not be read is in `errors` and costs nothing. Duplicates are
+ * folded. Results in input order.
+ * The `next_cursor` of an entry continues that timeline on `/v1/users/{user}/tweets`.
+ * Also `GET /v1/users/tweets/batch?ids=783214,813286&count=3`.
+ * When the balance covers only part of the list, the tail comes back as `no_credits` and is not fetched.
+ * The limit counts `count` tweets for each user.
+ *
+ */
+export const getUsersTweets = <ThrowOnError extends boolean = false>(options: Options<GetUsersTweetsData, ThrowOnError>): RequestResult<GetUsersTweetsResponses, GetUsersTweetsErrors, ThrowOnError> => (options.client ?? client).post<GetUsersTweetsResponses, GetUsersTweetsErrors, ThrowOnError>({
+    security: [{ name: 'x-api-key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/users/tweets/batch',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Profile by user id
  *
  * The same profile as `/v1/users/{handle}`, found by the numeric user id. The id stays the same when a
@@ -103,7 +128,7 @@ export const getUser = <ThrowOnError extends boolean = false>(options: Options<G
 /**
  * Latest tweets of a user
  *
- * 1 credit per tweet. `user` is a numeric id or a handle.
+ * Newest first, retweets included. A pinned tweet is in its place by date. 1 credit per tweet. `user` is a numeric id or a handle.
  */
 export const getUserTweets = <ThrowOnError extends boolean = false>(options: Options<GetUserTweetsData, ThrowOnError>): RequestResult<GetUserTweetsResponses, GetUserTweetsErrors, ThrowOnError> => (options.client ?? client).get<GetUserTweetsResponses, GetUserTweetsErrors, ThrowOnError>({
     security: [{ name: 'x-api-key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],

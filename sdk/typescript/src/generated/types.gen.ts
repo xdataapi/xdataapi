@@ -128,7 +128,7 @@ export type BatchMeta = {
      */
     errors: Array<BatchError>;
     /**
-     * Objects returned.
+     * Objects returned. In the timelines batch: tweets returned, for all users together.
      */
     items: number;
     credits_charged: number;
@@ -138,7 +138,7 @@ export type BatchMeta = {
      */
     cache: 'miss' | 'hit' | 'mixed' | 'bypass';
     /**
-     * Objects served from cache
+     * Objects served from cache, at half price. In the timelines batch: users served from cache.
      */
     cache_hits: number;
     request_id: string;
@@ -156,6 +156,28 @@ export type TweetBatch = BatchMeta & {
      * Found tweets
      */
     data?: Array<Tweet>;
+};
+
+export type UserTimeline = {
+    /**
+     * The user id from the request.
+     */
+    user_id: string;
+    /**
+     * Newest first. Empty when the user has no public tweets.
+     */
+    tweets: Array<Tweet>;
+    /**
+     * Send it to `/v1/users/{user}/tweets` as `cursor` to read on. Not there on the last page.
+     */
+    next_cursor?: string;
+};
+
+export type TimelineBatch = BatchMeta & {
+    /**
+     * One entry for each user that was read
+     */
+    data?: Array<UserTimeline>;
 };
 
 /**
@@ -430,6 +452,64 @@ export type GetUsersResponses = {
 };
 
 export type GetUsersResponse = GetUsersResponses[keyof GetUsersResponses];
+
+export type GetUsersTweetsData = {
+    body: {
+        ids: Array<string>;
+        /**
+         * Tweets for each user.
+         */
+        count?: number;
+    };
+    path?: never;
+    query?: {
+        /**
+         * Read X again and skip the cache. An item that has a cached copy costs 2x credits and is marked
+         * `"cache": "bypass"`. An item with no cached copy costs the normal price, as it would without `fresh`.
+         *
+         */
+        fresh?: boolean;
+    };
+    url: '/v1/users/tweets/batch';
+};
+
+export type GetUsersTweetsErrors = {
+    /**
+     * The request itself is wrong: a bad parameter, cursor or body. Free.
+     */
+    400: Error;
+    /**
+     * Missing or invalid key. Free.
+     */
+    401: Error;
+    /**
+     * Balance is zero. Buy a pack. Free.
+     */
+    402: Error;
+    /**
+     * Per-account rate limit. Free. Retry after `Retry-After` seconds.
+     */
+    429: Error;
+    /**
+     * A fault on our side. Free. Quote `request_id` if it persists.
+     */
+    500: Error;
+    /**
+     * Upstream failure. Free. Retry after `Retry-After` seconds.
+     */
+    503: Error;
+};
+
+export type GetUsersTweetsError = GetUsersTweetsErrors[keyof GetUsersTweetsErrors];
+
+export type GetUsersTweetsResponses = {
+    /**
+     * OK
+     */
+    200: TimelineBatch;
+};
+
+export type GetUsersTweetsResponse = GetUsersTweetsResponses[keyof GetUsersTweetsResponses];
 
 export type GetUserByIdData = {
     body?: never;

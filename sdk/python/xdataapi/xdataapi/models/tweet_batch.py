@@ -23,11 +23,11 @@ class TweetBatch:
     """
     Attributes:
         errors (list[BatchError]): Inputs that returned nothing, with the reason. Never charged.
-        items (int): Objects returned.
+        items (int): Objects returned. In the timelines batch: tweets returned, for all users together.
         credits_charged (float):
         balance_remaining (float):
         cache (BatchMetaCache): The mode of the found items when they all agree, else `mixed`.
-        cache_hits (int): Objects served from cache
+        cache_hits (int): Objects served from cache, at half price. In the timelines batch: users served from cache.
         request_id (UUID):
         data (list[Tweet] | Unset): Found tweets
     """
