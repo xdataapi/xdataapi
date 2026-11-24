@@ -40,6 +40,10 @@ info:
     account, not per key, and rises with the total paid: 1 request per second before
     the first pack, 20 from it, up to 200.
 
+    One account can have 16 reads of X in progress at the same time. A further call
+    waits up to 5 seconds for a place, then gets `503` with the code `busy` and
+    `Retry-After: 2`, free. A response served from cache does not count.
+
     The keyless endpoints — `GET /`, `/status`, `/healthz` and `/openapi.yaml` — carry
     the same two headers under a separate policy named `public`: 10 requests per second
     per address. That is far above any real caller and exists to stop a loop, not to
