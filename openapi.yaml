@@ -97,8 +97,11 @@ components:
       in: query
       schema: { type: string }
       description: |
-        Opaque cursor from `next_cursor` of the previous page. Pages hold exactly `count` items while
-        there are that many; you pay for the items you receive. No `next_cursor` means the end.
+        Opaque cursor from `next_cursor` of the previous page. Pages hold `count` items while there are
+        that many; a page can be a few items short (at most a tenth of `count`), or shorter when X refuses
+        a read part way, and `next_cursor` then continues with no gap. A `count` above the default can
+        take more than one read of X in the same call. You pay for the items you receive. No `next_cursor`
+        means the end.
     fresh:
       name: fresh
       in: query
@@ -184,7 +187,7 @@ components:
         items: { type: integer, description: Objects returned. }
         credits_charged: { type: number, example: 20 }
         balance_remaining: { type: number, example: 79980 }
-        cache: { type: string, enum: [miss, hit, bypass], description: "`miss`: read from X, normal price. `hit`: from cache, half price. `bypass`: `fresh=true` skipped a cached copy, 2x." }
+        cache: { type: string, enum: [miss, hit, bypass], description: "`miss`: read from X, normal price. `hit`: from cache, half price. `bypass`: `fresh=true` skipped a cached copy, 2x. A page that has cached and new items is `miss` (or `bypass`), and each item costs the price of its own source; `hit` means all of it came from cache." }
         request_id: { type: string, format: uuid }
         next_cursor: { type: string }
     TweetPage:
