@@ -1,6 +1,6 @@
 [project]
 name = "llama-index-tools-xdataapi"
-version = "0.1.4"
+version = "0.1.5"
 description = "LlamaIndex tool spec for xdataapi.io: read-only public X (Twitter) profiles, tweets, threads, followers and search."
 readme = "README.md"
 license = "MIT"

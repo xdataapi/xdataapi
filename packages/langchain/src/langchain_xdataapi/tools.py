@@ -138,11 +138,28 @@ class GetUsers(_Base):
         return "/v1/users/batch", {"handles": ",".join(_handle(h) for h in handles or []), "fresh": fresh}
 
 
+def _count(default: int, maximum: int) -> Any:
+    # The API answers `default` items when count is left out, and clamps a
+    # larger count to `maximum`. Both differ per endpoint, so say them here.
+    return Field(
+        default=None,
+        description=f"Results on this page, 1 to {maximum}. Default {default}; send {maximum} for a full page.",
+    )
+
+
 class _PageArgs(BaseModel):
     user: str = Field(description="X handle (with or without @) or numeric user id.")
-    count: int | None = Field(default=None, description="Results on this page. 1 to 50.")
+    count: int | None = _count(20, 100)
     cursor: str | None = Field(default=None, description="next_cursor from the previous page.")
     fresh: bool | None = Field(default=None, description="Skip the cache. Costs double.")
+
+
+class _ProfilePageArgs(_PageArgs):
+    count: int | None = _count(50, 200)
+
+
+class _IdPageArgs(_PageArgs):
+    count: int | None = _count(200, 200)
 
 
 class GetUserTweets(_Base):
@@ -200,7 +217,7 @@ class GetFollowers(_Base):
         "Followers of an X user, as full profiles. Costs 0.1 credit per profile. "
         "Some accounts refuse this read; a 403 is free. Use x_get_follower_ids when ids are enough."
     )
-    args_schema: type[BaseModel] = _PageArgs
+    args_schema: type[BaseModel] = _ProfilePageArgs
 
     def _call(
         self, user: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
@@ -218,7 +235,7 @@ class GetFollowerIds(_Base):
         "Numeric ids of an X user's followers, without the profiles. Costs 0.02 credit per id, "
         "five times less than x_get_followers. Use it to size or intersect an audience."
     )
-    args_schema: type[BaseModel] = _PageArgs
+    args_schema: type[BaseModel] = _IdPageArgs
 
     def _call(
         self, user: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
@@ -236,7 +253,7 @@ class GetFollowing(_Base):
         "Accounts an X user follows. Costs 0.1 credit per profile. Some accounts refuse this read; "
         "a 403 is free."
     )
-    args_schema: type[BaseModel] = _PageArgs
+    args_schema: type[BaseModel] = _ProfilePageArgs
 
     def _call(
         self, user: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None
@@ -266,7 +283,7 @@ class _SearchArgs(BaseModel):
             "profiles), Photos, Videos."
         ),
     )
-    count: int | None = Field(default=None, description="Results on this page. 1 to 50.")
+    count: int | None = _count(20, 50)
     cursor: str | None = Field(default=None, description="next_cursor from the previous page.")
     fresh: bool | None = Field(default=None, description="Skip the cache. Costs double.")
 
@@ -361,7 +378,7 @@ class GetReplies(_Base):
 
 class _CountedTweetArgs(BaseModel):
     id: str = Field(description="Numeric post id, as a string.")
-    count: int | None = Field(default=None, description="Results on this page. 1 to 50.")
+    count: int | None = _count(20, 50)
     cursor: str | None = Field(default=None, description="next_cursor from the previous page.")
     fresh: bool | None = Field(default=None, description="Skip the cache. Costs double.")
 
@@ -381,13 +398,17 @@ class GetQuotes(_Base):
         }
 
 
+class _RetweetersArgs(_CountedTweetArgs):
+    count: int | None = _count(50, 200)
+
+
 class GetRetweeters(_Base):
     name: str = "x_get_retweeters"
     description: str = (
         "Accounts that reposted one X post. Costs 0.5 credit per profile. Some accounts refuse "
         "this read; a 403 is free."
     )
-    args_schema: type[BaseModel] = _CountedTweetArgs
+    args_schema: type[BaseModel] = _RetweetersArgs
 
     def _call(
         self, id: str, count: int | None = None, cursor: str | None = None, fresh: bool | None = None

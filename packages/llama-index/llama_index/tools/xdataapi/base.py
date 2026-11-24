@@ -117,7 +117,7 @@ class XdataapiToolSpec(BaseToolSpec):
                 Example: from:vercel since:2026-09-01 -filter:replies
             product: Latest (default, always available), Top (may answer 403,
                 free), People (returns profiles), Photos, Videos.
-            count: Results on this page, 1 to 50.
+            count: Results on this page, 1 to 50. Default 20; send 50 for a full page.
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
@@ -174,7 +174,7 @@ class XdataapiToolSpec(BaseToolSpec):
 
         Args:
             id: Numeric post id, as a string.
-            count: Results on this page, 1 to 50.
+            count: Results on this page, 1 to 50. Default 20; send 50 for a full page.
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
@@ -189,7 +189,7 @@ class XdataapiToolSpec(BaseToolSpec):
 
         Args:
             id: Numeric post id, as a string.
-            count: Results on this page, 1 to 50.
+            count: Results on this page, 1 to 200. Default 50; send 200 for a full page.
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
@@ -244,7 +244,7 @@ class XdataapiToolSpec(BaseToolSpec):
 
         Args:
             user: X handle (with or without @) or numeric user id.
-            count: Results on this page, 1 to 50.
+            count: Results on this page, 1 to 100. Default 20; send 100 for a full page.
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
@@ -282,7 +282,7 @@ class XdataapiToolSpec(BaseToolSpec):
 
         Args:
             user: X handle (with or without @) or numeric user id.
-            count: Results on this page, 1 to 50.
+            count: Results on this page, 1 to 200. Default 50; send 200 for a full page.
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
@@ -299,7 +299,7 @@ class XdataapiToolSpec(BaseToolSpec):
 
         Args:
             user: X handle (with or without @) or numeric user id.
-            count: Results on this page, 1 to 50.
+            count: Results on this page, 1 to 200. Default 200; send 200 for a full page.
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
@@ -315,7 +315,7 @@ class XdataapiToolSpec(BaseToolSpec):
 
         Args:
             user: X handle (with or without @) or numeric user id.
-            count: Results on this page, 1 to 50.
+            count: Results on this page, 1 to 200. Default 50; send 200 for a full page.
             cursor: next_cursor from the previous page.
         """
         return self.client.get(
