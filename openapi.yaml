@@ -105,8 +105,9 @@ components:
         that many; a page can be a few items short (at most a tenth of `count`), or shorter when X refuses
         a read part way or is slow (no further read after 8 seconds in one call), and `next_cursor` then
         continues with no gap. A `count` above the default can
-        take more than one read of X in the same call. You pay for the items you receive. No `next_cursor`
-        means the end.
+        take more than one read of X in the same call. From 2026-11-24, for a limited time, a search or
+        quotes call reads X one time: its page holds about 20 tweets for any `count`, and `next_cursor`
+        continues. You pay for the items you receive. No `next_cursor` means the end.
     fresh:
       name: fresh
       in: query
