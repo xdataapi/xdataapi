@@ -18,7 +18,7 @@ npm install n8n-nodes-xdataapi
 
 ## Credentials
 
-Get a key at [xdataapi.io/dashboard](https://xdataapi.io/dashboard). New keys start with 5,000 free credits
+Get a key at [xdataapi.io/dashboard](https://xdataapi.io/dashboard). New keys start with 1,000 free credits
 and no card. In n8n add an **xdataapi API** credential and paste the key. The credential test calls
 `/v1/me`, which is free and reports the balance, so a green tick also proves the key has credits.
 

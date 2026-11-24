@@ -22,7 +22,7 @@ export class XdataapiApi implements ICredentialType {
 			required: true,
 			placeholder: 'xd_live_...',
 			description:
-				'Key from <a href="https://xdataapi.io/dashboard" target="_blank">xdataapi.io/dashboard</a>. New keys start with 5,000 free credits, no card.',
+				'Key from <a href="https://xdataapi.io/dashboard" target="_blank">xdataapi.io/dashboard</a>. New keys start with 1,000 free credits, no card.',
 		},
 	];
 

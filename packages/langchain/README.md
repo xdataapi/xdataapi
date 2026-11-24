@@ -98,7 +98,7 @@ It signs in with OAuth on first use. It is on the official MCP Registry as `io.x
 
 ## Keys and pricing
 
-Get a key at [xdataapi.io/dashboard](https://xdataapi.io/dashboard). 5,000 credits to start, no card.
+Get a key at [xdataapi.io/dashboard](https://xdataapi.io/dashboard). 1,000 credits to start, no card.
 Prepaid packs from $10; credits never expire. Live status: [xdataapi.io/status](https://xdataapi.io/status).
 
 MIT licensed.

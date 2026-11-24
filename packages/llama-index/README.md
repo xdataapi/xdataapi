@@ -92,7 +92,7 @@ An agent that speaks MCP needs no package. The hosted server is at `https://api.
 
 ## Keys and pricing
 
-Get a key at [xdataapi.io/dashboard](https://xdataapi.io/dashboard). 5,000 credits to start, no card.
+Get a key at [xdataapi.io/dashboard](https://xdataapi.io/dashboard). 1,000 credits to start, no card.
 Prepaid packs from $10; credits never expire. Live status: [xdataapi.io/status](https://xdataapi.io/status).
 
 MIT licensed.

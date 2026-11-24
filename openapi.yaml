@@ -40,6 +40,11 @@ info:
     account, not per key, and rises with the total paid: 1 request per second before
     the first pack, 20 from it, up to 200.
 
+    From 2026-11-24, for a limited time, search has its own limit: 6 calls per minute
+    before the first pack and 30 from it, for `/v1/tweets/search` and
+    `/v1/tweets/{id}/quotes` together. A call served from cache does not count. Above
+    it the answer is `429` `rate_limited` with `Retry-After`, and nothing is charged.
+
     One account can have 16 reads of X in progress at the same time. A further call
     waits up to 5 seconds for a place, then gets `503` with the code `busy` and
     `Retry-After: 2`, free. A response served from cache does not count.
