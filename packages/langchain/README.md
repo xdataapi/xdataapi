@@ -61,7 +61,8 @@ print(search.invoke({"q": "from:vercel since:2026-09-01", "count": 10}))
 | `x_get_following` | Accounts a user follows | 0.1 per profile |
 | `x_get_balance` | Credits left and rate limit | free |
 
-Empty results and failed requests cost nothing. A repeated read inside the cache window costs half.
+Empty results and failed requests cost nothing (before the first pack, 100 empty searches in 24 hours are free,
+then 1 credit each). A repeated read inside the cache window costs half.
 Every response carries `credits_charged` and `balance_remaining`, so the model can see the budget shrink
 and stop on its own.
 

@@ -4,7 +4,9 @@ info:
   version: 0.3.0
   description: |
     Read-only X (Twitter) data API. One credit is one tweet or one profile returned.
-    Empty results and failed requests cost nothing. Every response carries
+    Empty results and failed requests cost nothing, with one exception: before the first pack, a
+    search or quotes call with no result is free 100 times in 24 hours, and each one after that
+    costs 1 credit. Every response carries
     `credits_charged`, `balance_remaining`, `cache` and `request_id`.
 
     Batch reads: `/v1/users/batch` and `/v1/tweets/batch` take up to 100 handles or ids per call.
